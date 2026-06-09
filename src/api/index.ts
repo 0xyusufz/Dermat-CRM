@@ -1,0 +1,5 @@
+export { apiClient, ApiError } from './client'
+export { fetchDashboard } from './dashboardApi'
+export { fetchPatient } from './patientApi'
+export { searchPatients } from './searchApi'
+export type * from './types'
