@@ -1,15 +1,12 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Bell, Menu, Moon, Plus, Search, Sun, User } from 'lucide-react'
-import { useState } from 'react'
+import { Bell, Menu, Moon, Plus, Sun, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { GlobalPatientSearch } from '@/components/search/GlobalPatientSearch'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { useTheme } from '@/contexts/ThemeContext'
-import { searchPatients } from '@/data/mockData'
-import { useDebounce } from '@/hooks/useDebounce'
-import { cn } from '@/lib/utils'
+import { useDashboard } from '@/hooks/useDashboard'
 
 const notifications = [
   { id: 1, title: 'Follow-up reminder', message: '5 follow-ups scheduled for today', time: '2m ago' },
@@ -20,64 +17,18 @@ const notifications = [
 export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchFocused, setSearchFocused] = useState(false)
-  const debouncedQuery = useDebounce(searchQuery, 200)
-  const results = debouncedQuery.length >= 1 ? searchPatients(debouncedQuery) : []
+  const { data, isLoading } = useDashboard()
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border glass px-4 sm:gap-4 sm:px-6">
       <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={onMenuClick}>
         <Menu className="h-5 w-5" />
       </Button>
-      <div className="relative flex-1 max-w-xl">
-        <div
-          className={cn(
-            'relative flex items-center rounded-2xl border transition-all duration-200',
-            searchFocused
-              ? 'border-primary/40 bg-background shadow-md ring-4 ring-primary/10'
-              : 'border-border bg-muted/40 hover:border-primary/20'
-          )}
-        >
-          <Search className="absolute left-4 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-            placeholder="Search patients by ID, name, or phone..."
-            className="h-11 border-0 bg-transparent pl-11 pr-4 text-sm shadow-none focus-visible:ring-0"
-          />
-          <kbd className="absolute right-3 hidden rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground sm:inline-block">
-            ⌘K
-          </kbd>
-        </div>
 
-        {searchFocused && results.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
-            {results.map((patient) => (
-              <button
-                key={patient.id}
-                onMouseDown={() => {
-                  navigate(`/patients/${patient.id}`)
-                  setSearchQuery('')
-                }}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-muted/60 transition-colors cursor-pointer"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  {patient.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{patient.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {patient.id} · {patient.phone}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <GlobalPatientSearch
+        patientSearchIndex={data?.patientSearchIndex}
+        isIndexLoading={isLoading}
+      />
 
       <div className="flex items-center gap-2">
         <Button

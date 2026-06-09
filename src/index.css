@@ -21,6 +21,8 @@
   --color-danger: #ef4444;
   --color-card: #ffffff;
   --color-sidebar: #fafbff;
+  --color-surface-hover: #f1f5f9;
+  --surface-hover: #f1f5f9;
 }
 
 .dark {
@@ -34,6 +36,8 @@
   --color-accent: #a78bfa;
   --color-card: #111827;
   --color-sidebar: #0f1420;
+  --color-surface-hover: #1e293b;
+  --surface-hover: #1e293b;
 }
 
 * {

@@ -49,6 +49,19 @@ export interface TodayFollowupItem {
   status: string
 }
 
+export interface PatientSearchIndexItem {
+  patientId: string
+  fullName: string
+  displayName: string
+  phone: string
+  doctor: string
+  status: string
+  gender: string
+  age: number
+  registrationDate: string
+  searchText: string
+}
+
 export interface ActivePrescriptionItem {
   prescriptionId?: string
   patientId?: string
@@ -70,6 +83,7 @@ export interface DashboardData {
   consultationPending: ConsultationPendingItem[]
   todayFollowups: TodayFollowupItem[]
   activePrescriptions: ActivePrescriptionItem[]
+  patientSearchIndex?: PatientSearchIndexItem[]
   meta?: Record<string, unknown>
   generatedAt?: string
 }
