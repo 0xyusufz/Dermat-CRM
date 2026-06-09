@@ -35,6 +35,7 @@ patients.slice(0, 40).forEach((patient, i) => {
             conditionName: patient.conditions?.[0] ?? 'Dermatitis',
             infectionType: 'Acne',
             diagnosisDate: daysAgo(30 + i),
+            lastReviewDate: daysAgo(5 + (i % 10)),
             status: 'Active',
             medicines: [
               {
@@ -88,6 +89,7 @@ bundles['DERM-1040'] = {
       conditionName: 'Acne Vulgaris',
       infectionType: 'Acne',
       diagnosisDate: daysAgo(45),
+      lastReviewDate: daysAgo(7),
       status: 'Active',
       notes: 'Moderate inflammatory acne.',
       medicines: [
@@ -123,6 +125,7 @@ bundles['DERM-1040'] = {
       conditionName: 'Tinea Corporis',
       infectionType: 'Fungal Infection',
       diagnosisDate: daysAgo(30),
+      lastReviewDate: daysAgo(14),
       status: 'Monitoring',
       medicines: [
         {
@@ -166,6 +169,23 @@ bundles['DERM-1040'] = {
       status: 'Completed',
       source: 'Manual',
       completedDate: daysAgo(14),
+    },
+    {
+      id: 'fu-1040-rescheduled',
+      patientId: 'DERM-1040',
+      date: daysAgo(12),
+      timeSlot: 'Morning',
+      status: 'Rescheduled',
+      source: 'Manual',
+      rescheduleReason: 'Patient requested later slot',
+    },
+    {
+      id: 'fu-1040-cancelled',
+      patientId: 'DERM-1040',
+      date: daysAgo(20),
+      timeSlot: 'Night',
+      status: 'Cancelled',
+      source: 'System',
     },
     {
       id: 'fu-1040-3',
@@ -232,6 +252,30 @@ bundles['DERM-1040'] = {
       type: 'visit_completed',
       title: 'Completed visit',
       description: 'Progress review — stable response',
+      timestamp: isoDaysAgo(14),
+    },
+    {
+      id: 'tl-1040-6',
+      patientId: 'DERM-1040',
+      type: 'follow_up_rescheduled',
+      title: 'Follow-Up Rescheduled',
+      description: 'Moved to afternoon slot',
+      timestamp: isoDaysAgo(12),
+    },
+    {
+      id: 'tl-1040-7',
+      patientId: 'DERM-1040',
+      type: 'medicine_discontinued',
+      title: 'Medicine Discontinued',
+      description: 'Benzoyl Peroxide discontinued — course completed',
+      timestamp: isoDaysAgo(8),
+    },
+    {
+      id: 'tl-1040-8',
+      patientId: 'DERM-1040',
+      type: 'follow_up_completed',
+      title: 'Follow-Up Completed',
+      description: 'Routine progress check completed',
       timestamp: isoDaysAgo(14),
     },
   ],

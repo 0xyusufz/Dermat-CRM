@@ -1,5 +1,6 @@
 import { Pencil, StopCircle } from 'lucide-react'
-import { MedicineStatusBadge } from '@/components/shared/StatusBadge'
+import { EmptyState } from '@/components/patient-profile/EmptyState'
+import { ProfileStatusBadge } from '@/components/patient-profile/StatusBadge'
 import { Button } from '@/components/ui/button'
 import type { ConditionMedicine } from '@/data/patientProfileTypes'
 import { formatTiming } from '@/data/patientProfileTypes'
@@ -16,7 +17,7 @@ interface ConditionMedicinesTableProps {
   onDiscontinue: (medicine: ConditionMedicineRow) => void
 }
 
-export function ConditionMedicinesTable({
+export function MedicineTable({
   medicines,
   conditionId,
   onEdit,
@@ -24,9 +25,11 @@ export function ConditionMedicinesTable({
 }: ConditionMedicinesTableProps) {
   if (medicines.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-        No medicines for this condition. Add a medicine to start treatment.
-      </p>
+      <EmptyState
+        title="No active medicines found."
+        description="Add a medicine to start treatment for this condition."
+        className="py-8"
+      />
     )
   }
 
@@ -57,7 +60,7 @@ export function ConditionMedicinesTable({
                 <td className="px-3 py-2.5">{formatDate(m.startDate)}</td>
                 <td className="px-3 py-2.5">{m.durationDays} days</td>
                 <td className="px-3 py-2.5">
-                  <MedicineStatusBadge status={m.status} />
+                  <ProfileStatusBadge category="medicine" status={m.status} />
                 </td>
                 <td className="px-3 py-2.5">
                   <div className="flex justify-end gap-0.5">
@@ -93,3 +96,6 @@ export function ConditionMedicinesTable({
     </div>
   )
 }
+
+/** @deprecated Use MedicineTable — kept for backward compatibility */
+export const ConditionMedicinesTable = MedicineTable

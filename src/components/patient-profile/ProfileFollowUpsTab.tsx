@@ -1,26 +1,23 @@
 import { CalendarPlus } from 'lucide-react'
 import { ActiveFollowUpCard } from '@/components/patient-profile/follow-ups/ActiveFollowUpCard'
-import { FollowUpHistoryTable } from '@/components/patient-profile/follow-ups/FollowUpHistoryTable'
+import { FollowupHistoryList } from '@/components/patient-profile/FollowupHistoryList'
 import { FollowUpPolicyBanner } from '@/components/patient-profile/follow-ups/FollowUpPolicyBanner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { PatientFollowUpRecord } from '@/data/patientProfileTypes'
-import { getFollowUpHistory } from '@/data/patientProfileTypes'
+import type { FollowUpHistoryItem, PatientFollowUpRecord } from '@/data/patientProfileTypes'
 
 interface ProfileFollowUpsTabProps {
-  followUps: PatientFollowUpRecord[]
   activeFollowUp: PatientFollowUpRecord | null
+  followupHistory: FollowUpHistoryItem[]
   onComplete: (fu: PatientFollowUpRecord) => void
   onReschedule: (fu: PatientFollowUpRecord) => void
 }
 
 export function ProfileFollowUpsTab({
-  followUps,
   activeFollowUp,
+  followupHistory,
   onComplete,
   onReschedule,
 }: ProfileFollowUpsTabProps) {
-  const history = getFollowUpHistory(followUps)
-
   return (
     <div className="space-y-6">
       <FollowUpPolicyBanner />
@@ -47,11 +44,11 @@ export function ProfileFollowUpsTab({
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">Follow-Up History</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Completed, cancelled, and superseded records. Active follow-ups are not listed here.
+            Scheduled, rescheduled, completed, and cancelled follow-up activity.
           </p>
         </CardHeader>
         <CardContent>
-          <FollowUpHistoryTable history={history} />
+          <FollowupHistoryList history={followupHistory} />
         </CardContent>
       </Card>
     </div>

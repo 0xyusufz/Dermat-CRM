@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ConditionMedicineRow } from '@/components/patient-profile/ConditionMedicinesTable'
-import { ConditionAccordionCard } from '@/components/patient-profile/ConditionAccordionCard'
+import { ConditionCard } from '@/components/patient-profile/ConditionCard'
+import { EmptyState } from '@/components/patient-profile/EmptyState'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { PatientCondition } from '@/data/patientProfileTypes'
 
@@ -22,11 +23,11 @@ export function ProfileConditionsTab({
   if (conditions.length === 0) {
     return (
       <Card>
-        <CardContent className="py-16 text-center">
-          <p className="text-sm font-medium">No conditions on record</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Complete a consultation to create a condition and prescribe medicines.
-          </p>
+        <CardContent className="py-16">
+          <EmptyState
+            title="No active conditions found."
+            description="Complete a consultation to create a condition and prescribe medicines."
+          />
         </CardContent>
       </Card>
     )
@@ -42,7 +43,7 @@ export function ProfileConditionsTab({
       </CardHeader>
       <CardContent className="space-y-3">
         {conditions.map((condition) => (
-          <ConditionAccordionCard
+          <ConditionCard
             key={condition.id}
             condition={condition}
             expanded={expandedId === condition.id}

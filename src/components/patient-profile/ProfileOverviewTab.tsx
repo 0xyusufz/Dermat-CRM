@@ -1,18 +1,19 @@
 import { Activity, CalendarCheck, Pill } from 'lucide-react'
-import { FollowUpStatusBadge, PatientStatusBadge } from '@/components/shared/StatusBadge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PatientInfoCard } from '@/components/patient-profile/PatientInfoCard'
+import { ProfileStatusBadge } from '@/components/patient-profile/StatusBadge'
+import { TreatmentJourneyCard } from '@/components/patient-profile/TreatmentJourneyCard'
+import { Card, CardContent } from '@/components/ui/card'
 import type { PatientProfileOverview } from '@/data/patientProfileTypes'
 import { formatDate } from '@/lib/utils'
 
 export function ProfileOverviewTab({ overview }: { overview: PatientProfileOverview }) {
   const {
-    patient,
-    doctorName,
     activeConditionsCount,
     activeMedicinesCount,
     activeFollowUp,
     activeFollowUpStatusLabel,
     nextFollowUpDateLabel,
+    treatmentJourney,
   } = overview
 
   const summaryCards = [
@@ -37,7 +38,11 @@ export function ProfileOverviewTab({ overview }: { overview: PatientProfileOverv
       color: 'text-indigo-600',
       bg: 'bg-indigo-50 dark:bg-indigo-950',
       badge: activeFollowUp ? (
-        <FollowUpStatusBadge status={activeFollowUp.status} className="mt-1" />
+        <ProfileStatusBadge
+          category="followup"
+          status={activeFollowUp.status}
+          className="mt-1"
+        />
       ) : null,
     },
     {
@@ -55,42 +60,8 @@ export function ProfileOverviewTab({ overview }: { overview: PatientProfileOverv
 
   return (
     <div className="space-y-5">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">Patient</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight">{patient.name}</h2>
-              <p className="font-mono text-sm text-primary">{patient.id}</p>
-            </div>
-            <PatientStatusBadge status={patient.status} />
-          </div>
-          <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                WhatsApp Number
-              </dt>
-              <dd className="mt-1 font-medium">{patient.whatsapp}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Assigned Doctor
-              </dt>
-              <dd className="mt-1 font-medium">{doctorName}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Current Status
-              </dt>
-              <dd className="mt-1">
-                <PatientStatusBadge status={patient.status} />
-              </dd>
-            </div>
-          </dl>
-        </CardContent>
-      </Card>
+      <PatientInfoCard overview={overview} />
+      <TreatmentJourneyCard steps={treatmentJourney} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => {

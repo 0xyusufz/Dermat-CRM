@@ -17,7 +17,6 @@ import { RescheduleFollowUpModal } from '@/components/patient-profile/modals/Res
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getActiveFollowUp } from '@/data/patientProfileTypes'
 import type { PatientFollowUpRecord } from '@/data/patientProfileTypes'
 import { usePatientProfile } from '@/hooks/usePatientProfile'
 
@@ -35,6 +34,7 @@ export function PatientProfilePage() {
   const {
     patient,
     bundle,
+    snapshot,
     overview,
     loading,
     addMedicine,
@@ -45,7 +45,7 @@ export function PatientProfilePage() {
     rescheduleFollowUp,
   } = usePatientProfile(id)
 
-  const activeFollowUp = bundle ? getActiveFollowUp(bundle.followUps) : null
+  const activeFollowUp = snapshot?.activeFollowup ?? null
 
   const [addMedicineConditionId, setAddMedicineConditionId] = useState<string | null>(null)
   const addMedicineConditionName = useMemo(() => {
@@ -74,7 +74,7 @@ export function PatientProfilePage() {
     )
   }
 
-  if (!patient || !bundle || !overview) {
+  if (!patient || !bundle || !overview || !snapshot) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <p className="text-lg font-medium">Patient not found</p>
@@ -128,7 +128,7 @@ export function PatientProfilePage() {
 
         <TabsContent value="conditions" className="mt-6">
           <ProfileConditionsTab
-            conditions={bundle.conditions}
+            conditions={snapshot.conditions}
             onAddMedicine={setAddMedicineConditionId}
             onEditMedicine={setEditMedicine}
             onDiscontinueMedicine={setDiscontinueRow}
@@ -137,15 +137,15 @@ export function PatientProfilePage() {
 
         <TabsContent value="follow-ups" className="mt-6">
           <ProfileFollowUpsTab
-            followUps={bundle.followUps}
-            activeFollowUp={activeFollowUp}
+            activeFollowUp={snapshot.activeFollowup}
+            followupHistory={snapshot.followupHistory}
             onComplete={setCompleteFollowUpTarget}
             onReschedule={setRescheduleTarget}
           />
         </TabsContent>
 
         <TabsContent value="timeline" className="mt-6">
-          <ProfileTimelineTab events={bundle.timeline} />
+          <ProfileTimelineTab events={snapshot.timeline} />
         </TabsContent>
       </Tabs>
 

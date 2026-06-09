@@ -3,18 +3,14 @@ import { doctors, patients } from '@/data/mockData'
 import type {
   PatientProfileBundle,
   PatientProfileOverview,
+  PatientProfileSnapshot,
   AddMedicineInput,
   UpdateMedicineInput,
   UpsertFollowUpInput,
   RescheduleFollowUpInput,
   DiscontinueReason,
 } from '@/data/patientProfileTypes'
-import {
-  countActiveConditions,
-  countActiveMedicines,
-  getActiveFollowUp,
-  getActiveFollowUpStatusLabel,
-} from '@/data/patientProfileTypes'
+import { buildPatientProfileSnapshot } from '@/lib/patientProfileSnapshot'
 import { mockPatientProfileService } from '@/services/patientProfile/mockPatientProfileService'
 
 export function usePatientProfile(patientId: string | undefined) {
@@ -44,25 +40,17 @@ export function usePatientProfile(patientId: string | undefined) {
     setBundle(next)
   }, [])
 
-  const overview: PatientProfileOverview | null = useMemo(() => {
+  const snapshot: PatientProfileSnapshot | null = useMemo(() => {
     if (!patient || !bundle) return null
-    const activeFollowUp = getActiveFollowUp(bundle.followUps)
-    return {
-      patient,
-      doctorName: doctor?.name ?? '—',
-      activeConditionsCount: countActiveConditions(bundle.conditions),
-      activeMedicinesCount: countActiveMedicines(bundle.conditions),
-      activeFollowUp,
-      activeFollowUpStatusLabel: getActiveFollowUpStatusLabel(activeFollowUp),
-      nextFollowUpDateLabel: activeFollowUp
-        ? activeFollowUp.date
-        : '—',
-    }
+    return buildPatientProfileSnapshot(bundle, patient, doctor?.name ?? '—')
   }, [patient, bundle, doctor])
+
+  const overview: PatientProfileOverview | null = snapshot?.overview ?? null
 
   return {
     patient,
     bundle,
+    snapshot,
     overview,
     loading,
     reload: load,

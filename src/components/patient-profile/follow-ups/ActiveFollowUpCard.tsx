@@ -1,5 +1,5 @@
 import { Calendar, CalendarCheck, Clock, RotateCcw, Sparkles } from 'lucide-react'
-import { FollowUpStatusBadge } from '@/components/shared/StatusBadge'
+import { ProfileStatusBadge } from '@/components/patient-profile/StatusBadge'
 import { Button } from '@/components/ui/button'
 import type { PatientFollowUpRecord } from '@/data/patientProfileTypes'
 import { formatDate } from '@/lib/utils'
@@ -31,7 +31,7 @@ export function ActiveFollowUpCard({
               <p className="text-sm text-muted-foreground">Requires manager attention</p>
             </div>
           </div>
-          <FollowUpStatusBadge status={followUp.status} />
+          <ProfileStatusBadge category="followup" status={followUp.status} />
         </div>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
@@ -69,3 +69,6 @@ export function ActiveFollowUpCard({
     </div>
   )
 }
+
+/** Alias for component architecture naming */
+export const ActiveFollowupCard = ActiveFollowUpCard

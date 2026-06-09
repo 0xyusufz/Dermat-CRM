@@ -27,6 +27,7 @@ export type TimelineEventType =
   | 'follow_up_rescheduled'
   | 'follow_up_completed'
   | 'visit_completed'
+  | (string & {})
 
 export const TIMING_OPTIONS: TimingOption[] = ['Morning', 'Afternoon', 'Night']
 export const FREQUENCY_OPTIONS: FrequencyOption[] = ['Daily', 'Alternate Days', 'Weekly']
@@ -58,6 +59,7 @@ export interface PatientCondition {
   conditionName: string
   infectionType: string
   diagnosisDate: string
+  lastReviewDate?: string
   status: ConditionStatus
   notes?: string
   medicines: ConditionMedicine[]
@@ -186,14 +188,39 @@ export function formatTiming(timing: TimingOption[]): string {
   return timing.length ? timing.join(', ') : '—'
 }
 
+export interface TreatmentJourneyStep {
+  key: string
+  label: string
+  completed: boolean
+}
+
+export interface FollowUpHistoryItem {
+  id: string
+  date: string
+  title: string
+  status?: FollowUpStatus | 'Created'
+  description?: string
+}
+
 export interface PatientProfileOverview {
   patient: Patient
   doctorName: string
+  lastVisitDate: string | null
   activeConditionsCount: number
   activeMedicinesCount: number
   activeFollowUp: PatientFollowUpRecord | null
   activeFollowUpStatusLabel: string
   nextFollowUpDateLabel: string
+  treatmentJourney: TreatmentJourneyStep[]
+}
+
+export interface PatientProfileSnapshot {
+  patient: Patient
+  overview: PatientProfileOverview
+  conditions: PatientCondition[]
+  activeFollowup: PatientFollowUpRecord | null
+  followupHistory: FollowUpHistoryItem[]
+  timeline: PatientTimelineEvent[]
 }
 
 export function countActiveConditions(conditions: PatientCondition[]): number {

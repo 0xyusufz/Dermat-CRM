@@ -1,11 +1,14 @@
 import type {
   PatientProfileBundle,
+  PatientProfileSnapshot,
   AddMedicineInput,
   UpdateMedicineInput,
   UpsertFollowUpInput,
   RescheduleFollowUpInput,
   DiscontinueReason,
 } from '@/data/patientProfileTypes'
+
+export type { PatientProfileSnapshot }
 
 /** Contract for future Airtable / n8n integration. */
 export interface IPatientProfileService {
