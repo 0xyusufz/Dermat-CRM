@@ -1,62 +1,77 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { doctors, patients } from '@/data/mockData'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ApiError } from '@/api/client'
+import { fetchPatient } from '@/api/patientApi'
 import type {
-  PatientProfileBundle,
+  AddMedicineInput,
+  DiscontinueReason,
   PatientProfileOverview,
   PatientProfileSnapshot,
-  AddMedicineInput,
+  RescheduleFollowUpInput,
   UpdateMedicineInput,
   UpsertFollowUpInput,
-  RescheduleFollowUpInput,
-  DiscontinueReason,
 } from '@/data/patientProfileTypes'
-import { buildPatientProfileSnapshot } from '@/lib/patientProfileSnapshot'
+import { mapPatientApiResponse } from '@/lib/mapPatientApiResponse'
 import { mockPatientProfileService } from '@/services/patientProfile/mockPatientProfileService'
 
+export const patientQueryKey = (patientId: string) => ['patient', patientId] as const
+
+const PATIENT_QUERY_OPTIONS = {
+  staleTime: 300_000,
+  gcTime: 600_000,
+  retry: 1,
+  refetchOnWindowFocus: false,
+} as const
+
+export function prefetchPatient(queryClient: ReturnType<typeof useQueryClient>, patientId: string) {
+  return queryClient.prefetchQuery({
+    queryKey: patientQueryKey(patientId),
+    queryFn: async () => {
+      const data = await fetchPatient(patientId)
+      return mapPatientApiResponse(data)
+    },
+    ...PATIENT_QUERY_OPTIONS,
+  })
+}
+
 export function usePatientProfile(patientId: string | undefined) {
-  const [bundle, setBundle] = useState<PatientProfileBundle | null>(null)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const patient = patientId ? patients.find((p) => p.id === patientId) : undefined
-  const doctor = patient ? doctors.find((d) => d.id === patient.doctorId) : undefined
+  const query = useQuery({
+    queryKey: patientQueryKey(patientId ?? ''),
+    queryFn: async () => {
+      if (!patientId) throw new Error('Patient ID is required')
+      const data = await fetchPatient(patientId)
+      return mapPatientApiResponse(data)
+    },
+    enabled: !!patientId,
+    ...PATIENT_QUERY_OPTIONS,
+  })
 
-  const load = useCallback(async () => {
-    if (!patientId) {
-      setBundle(null)
-      setLoading(false)
-      return
-    }
-    setLoading(true)
-    const data = await mockPatientProfileService.getBundle(patientId)
-    setBundle(data)
-    setLoading(false)
-  }, [patientId])
-
-  useEffect(() => {
-    load()
-  }, [load])
-
-  const apply = useCallback(async (next: PatientProfileBundle) => {
-    setBundle(next)
-  }, [])
-
-  const snapshot: PatientProfileSnapshot | null = useMemo(() => {
-    if (!patient || !bundle) return null
-    return buildPatientProfileSnapshot(bundle, patient, doctor?.name ?? '—')
-  }, [patient, bundle, doctor])
-
+  const snapshot: PatientProfileSnapshot | null = query.data ?? null
   const overview: PatientProfileOverview | null = snapshot?.overview ?? null
+  const patient = snapshot?.patient
+
+  const invalidate = () => {
+    if (patientId) {
+      queryClient.invalidateQueries({ queryKey: patientQueryKey(patientId) })
+    }
+  }
 
   return {
     patient,
-    bundle,
     snapshot,
     overview,
-    loading,
-    reload: load,
+    loading: query.isLoading,
+    isFetching: query.isFetching,
+    error: query.error,
+    isError: query.isError,
+    isNotFound: query.error instanceof ApiError && query.error.status === 404,
+    isNetworkError: query.error instanceof ApiError && query.error.status === 0,
+    reload: query.refetch,
     addMedicine: async (input: AddMedicineInput) => {
       if (!patientId) return
-      apply(await mockPatientProfileService.addMedicine(patientId, input))
+      await mockPatientProfileService.addMedicine(patientId, input)
+      invalidate()
     },
     updateMedicine: async (
       conditionId: string,
@@ -64,14 +79,8 @@ export function usePatientProfile(patientId: string | undefined) {
       input: UpdateMedicineInput
     ) => {
       if (!patientId) return
-      apply(
-        await mockPatientProfileService.updateMedicine(
-          patientId,
-          conditionId,
-          medicineId,
-          input
-        )
-      )
+      await mockPatientProfileService.updateMedicine(patientId, conditionId, medicineId, input)
+      invalidate()
     },
     discontinueMedicine: async (
       conditionId: string,
@@ -79,28 +88,28 @@ export function usePatientProfile(patientId: string | undefined) {
       reason: DiscontinueReason
     ) => {
       if (!patientId) return
-      apply(
-        await mockPatientProfileService.discontinueMedicine(
-          patientId,
-          conditionId,
-          medicineId,
-          reason
-        )
+      await mockPatientProfileService.discontinueMedicine(
+        patientId,
+        conditionId,
+        medicineId,
+        reason
       )
+      invalidate()
     },
     addFollowUp: async (input: UpsertFollowUpInput) => {
       if (!patientId) return
-      apply(await mockPatientProfileService.upsertActiveFollowUp(patientId, input))
+      await mockPatientProfileService.upsertActiveFollowUp(patientId, input)
+      invalidate()
     },
     completeFollowUp: async (followUpId: string) => {
       if (!patientId) return
-      apply(await mockPatientProfileService.completeFollowUp(patientId, followUpId))
+      await mockPatientProfileService.completeFollowUp(patientId, followUpId)
+      invalidate()
     },
     rescheduleFollowUp: async (followUpId: string, input: RescheduleFollowUpInput) => {
       if (!patientId) return
-      apply(
-        await mockPatientProfileService.rescheduleFollowUp(patientId, followUpId, input)
-      )
+      await mockPatientProfileService.rescheduleFollowUp(patientId, followUpId, input)
+      invalidate()
     },
   }
 }

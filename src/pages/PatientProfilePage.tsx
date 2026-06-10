@@ -3,7 +3,9 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ActiveFollowUpQuickBar } from '@/components/patient-profile/follow-ups/ActiveFollowUpQuickBar'
 import type { ConditionMedicineRow } from '@/components/patient-profile/ConditionMedicinesTable'
+import { PatientProfileError } from '@/components/patient-profile/PatientProfileError'
 import { PatientProfileHeader } from '@/components/patient-profile/PatientProfileHeader'
+import { PatientProfileSkeleton } from '@/components/patient-profile/PatientProfileSkeleton'
 import { ProfileConditionsTab } from '@/components/patient-profile/ProfileConditionsTab'
 import { ProfileFollowUpsTab } from '@/components/patient-profile/ProfileFollowUpsTab'
 import { ProfileOverviewTab } from '@/components/patient-profile/ProfileOverviewTab'
@@ -15,7 +17,6 @@ import { CompleteFollowUpModal } from '@/components/patient-profile/modals/Compl
 import { ManageFollowUpModal } from '@/components/patient-profile/modals/ManageFollowUpModal'
 import { RescheduleFollowUpModal } from '@/components/patient-profile/modals/RescheduleFollowUpModal'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { PatientFollowUpRecord } from '@/data/patientProfileTypes'
 import { usePatientProfile } from '@/hooks/usePatientProfile'
@@ -23,7 +24,7 @@ import { usePatientProfile } from '@/hooks/usePatientProfile'
 const TAB_VALUES = ['overview', 'conditions', 'follow-ups', 'timeline'] as const
 
 export function PatientProfilePage() {
-  const { id } = useParams<{ id: string }>()
+  const { id: patientId } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab') ?? 'overview'
@@ -32,26 +33,31 @@ export function PatientProfilePage() {
     : 'overview'
 
   const {
-    patient,
-    bundle,
     snapshot,
     overview,
     loading,
+    isError,
+    isNotFound,
+    isNetworkError,
+    reload,
+    isFetching,
     addMedicine,
     updateMedicine,
     discontinueMedicine: discontinueMedicineAction,
     addFollowUp,
     completeFollowUp,
     rescheduleFollowUp,
-  } = usePatientProfile(id)
+  } = usePatientProfile(patientId)
 
   const activeFollowUp = snapshot?.activeFollowup ?? null
 
   const [addMedicineConditionId, setAddMedicineConditionId] = useState<string | null>(null)
   const addMedicineConditionName = useMemo(() => {
-    if (!addMedicineConditionId || !bundle) return ''
-    return bundle.conditions.find((c) => c.id === addMedicineConditionId)?.conditionName ?? ''
-  }, [addMedicineConditionId, bundle])
+    if (!addMedicineConditionId || !snapshot) return ''
+    return (
+      snapshot.conditions.find((c) => c.id === addMedicineConditionId)?.conditionName ?? ''
+    )
+  }, [addMedicineConditionId, snapshot])
 
   const [editMedicine, setEditMedicine] = useState<ConditionMedicineRow | null>(null)
   const [discontinueRow, setDiscontinueRow] = useState<ConditionMedicineRow | null>(null)
@@ -65,22 +71,29 @@ export function PatientProfilePage() {
   const followUpModalMode = activeFollowUp ? 'manage' : 'create'
 
   if (loading) {
+    return <PatientProfileSkeleton activeTab={tab} />
+  }
+
+  if (isError) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-32 w-full rounded-2xl" />
-        <Skeleton className="h-10 w-full max-w-xl rounded-xl" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+      <div className="mx-auto max-w-6xl space-y-6">
+        <Button variant="ghost" className="-ml-2" onClick={() => navigate('/patients')}>
+          <ArrowLeft className="h-4 w-4" />
+          Back to Patients
+        </Button>
+        <PatientProfileError
+          variant={isNotFound ? 'not-found' : isNetworkError ? 'network' : 'server'}
+          onRetry={isNotFound ? undefined : () => reload()}
+          isRetrying={isFetching}
+        />
       </div>
     )
   }
 
-  if (!patient || !bundle || !overview || !snapshot) {
+  if (!snapshot || !overview) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-lg font-medium">Patient not found</p>
-        <Button className="mt-4" onClick={() => navigate('/patients')}>
-          Back to Patients
-        </Button>
+      <div className="mx-auto max-w-6xl">
+        <PatientProfileError variant="not-found" />
       </div>
     )
   }

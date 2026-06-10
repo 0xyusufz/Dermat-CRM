@@ -1,6 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { prefetchPatient } from '@/hooks/usePatientProfile'
 import type { PatientSearchIndexItem } from '@/api/types'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +34,7 @@ export function GlobalPatientSearch({
   isIndexLoading = false,
 }: GlobalPatientSearchProps) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -179,7 +182,10 @@ export function GlobalPatientSearch({
                 data-index={index}
                 aria-selected={index === selectedIndex}
                 onMouseDown={() => openPatient(patient.patientId)}
-                onMouseEnter={() => setSelectedIndex(index)}
+                onMouseEnter={() => {
+                  setSelectedIndex(index)
+                  prefetchPatient(queryClient, patient.patientId)
+                }}
                 className={cn(
                   'flex w-full items-center gap-3 px-4 py-3 text-left transition-colors cursor-pointer',
                   index === selectedIndex
