@@ -31,6 +31,7 @@ export interface ConsultationMedicineDraft {
   startDate: string
   durationDays: number
   instructions: string
+  reminder: boolean
 }
 
 export function createEmptyMedicine(): ConsultationMedicineDraft {
@@ -43,6 +44,7 @@ export function createEmptyMedicine(): ConsultationMedicineDraft {
     startDate: new Date().toISOString().split('T')[0],
     durationDays: 30,
     instructions: '',
+    reminder: false,
   }
 }
 

@@ -1,117 +1,73 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Search } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { Search } from 'lucide-react'
 import { ConditionInformationCard } from '@/components/consultation/ConditionInformationCard'
 import { ConsultationSummaryCard } from '@/components/consultation/ConsultationSummaryCard'
 import { FollowUpScheduleCard } from '@/components/consultation/FollowUpScheduleCard'
 import { PatientSummaryCard } from '@/components/consultation/PatientSummaryCard'
 import { PrescriptionBuilderSection } from '@/components/consultation/PrescriptionBuilderSection'
 import { RemindersInfoCard } from '@/components/consultation/RemindersInfoCard'
-import {
-  createEmptyMedicine,
-  type ConsultationMedicineDraft,
-  type FollowUpTimeSlot,
-  type InfectionType,
-} from '@/components/consultation/types'
+import { WorkflowProgress } from '@/components/WorkflowProgress'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { TransactionResultCard } from '@/components/shared/TransactionResultCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import type { Patient } from '@/data/types'
-import { searchPatients } from '@/data/mockData'
-import { useDebounce } from '@/hooks/useDebounce'
+import { CONSULTATION_WORKFLOW_STEPS, useConsultation } from '@/hooks/useConsultation'
+import { formatDisplayName } from '@/lib/patientDisplayFormat'
 import { cn } from '@/lib/utils'
 
 export function ConsultationPage() {
-  const [query, setQuery] = useState('')
-  const [focused, setFocused] = useState(false)
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-  const debouncedQuery = useDebounce(query, 200)
-  const suggestions = debouncedQuery.length >= 1 ? searchPatients(debouncedQuery) : []
+  const consultation = useConsultation()
+  const {
+    searchQuery,
+    setSearchQuery,
+    searchFocused,
+    setSearchFocused,
+    searchResults,
+    selectedPatient,
+    selectPatient,
+    clearSelection,
+    skinProblem,
+    setSkinProblem,
+    infectionType,
+    setInfectionType,
+    diagnosisDate,
+    setDiagnosisDate,
+    doctorNotes,
+    setDoctorNotes,
+    medicines,
+    expandedMedicineId,
+    updateMedicine,
+    addMedicine,
+    removeMedicine,
+    toggleMedicine,
+    followUpDate,
+    setFollowUpDate,
+    followUpTime,
+    setFollowUpTime,
+    errors,
+    isValid,
+    submit,
+    resetForm,
+    isRunning,
+    success,
+    error,
+    timeoutNotice,
+  } = consultation
 
-  const [skinProblem, setSkinProblem] = useState('')
-  const [infectionType, setInfectionType] = useState<InfectionType>('Acne')
-  const [diagnosisDate, setDiagnosisDate] = useState(
-    () => new Date().toISOString().split('T')[0]
-  )
-  const [doctorNotes, setDoctorNotes] = useState('')
-  const [medicines, setMedicines] = useState<ConsultationMedicineDraft[]>(() => [
-    createEmptyMedicine(),
-  ])
-  const [expandedMedicineId, setExpandedMedicineId] = useState<string | null>(
-    () => medicines[0]?.id ?? null
-  )
-  const [followUpDate, setFollowUpDate] = useState('')
-  const [followUpTime, setFollowUpTime] = useState<FollowUpTimeSlot>('Morning')
-
-  const handleSelect = (patient: Patient) => {
-    setSelectedPatient(patient)
-    setQuery('')
-    setFocused(false)
-  }
-
-  const resetForm = useCallback(() => {
-    const first = createEmptyMedicine()
-    setSkinProblem('')
-    setInfectionType('Acne')
-    setDiagnosisDate(new Date().toISOString().split('T')[0])
-    setDoctorNotes('')
-    setMedicines([first])
-    setExpandedMedicineId(first.id)
-    setFollowUpDate('')
-    setFollowUpTime('Morning')
-  }, [])
-
-  const updateMedicine = (index: number, med: ConsultationMedicineDraft) => {
-    setMedicines((prev) => prev.map((m, i) => (i === index ? med : m)))
-  }
-
-  const addMedicine = () => {
-    const next = createEmptyMedicine()
-    setMedicines((prev) => [...prev, next])
-    setExpandedMedicineId(next.id)
-  }
-
-  const removeMedicine = (index: number) => {
-    setMedicines((prev) => {
-      const next = prev.filter((_, i) => i !== index)
-      const removed = prev[index]
-      if (expandedMedicineId === removed?.id) {
-        setExpandedMedicineId(next[next.length - 1]?.id ?? null)
-      }
-      return next
-    })
-  }
-
-  const toggleMedicine = (id: string) => {
-    setExpandedMedicineId((current) => (current === id ? null : id))
-  }
-
-  if (submitted) {
+  if (success) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="mx-auto max-w-lg pt-12 text-center"
-      >
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950">
-          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
-        </div>
-        <h2 className="mt-6 text-2xl font-bold tracking-tight">Consultation Saved</h2>
-        <p className="mt-2 text-muted-foreground">
-          Consultation record for {selectedPatient?.name} has been created successfully.
-        </p>
-        <Button
-          className="mt-8"
-          onClick={() => {
-            setSubmitted(false)
-            setSelectedPatient(null)
+      <TransactionResultCard
+        variant="success"
+        title={success.title}
+        lines={success.lines}
+        primaryAction={{
+          label: 'New Consultation',
+          onClick: () => {
+            clearSelection()
             resetForm()
-          }}
-        >
-          New Consultation
-        </Button>
-      </motion.div>
+          },
+        }}
+      />
     )
   }
 
@@ -122,49 +78,67 @@ export function ConsultationPage() {
         description="Structured dermatology workflow — condition, per-medicine prescriptions, and follow-up."
       />
 
+      {error && !error.isTimeout && (
+        <div className="mb-6 rounded-2xl border border-danger/30 bg-danger/5 p-4">
+          <p className="font-semibold text-danger">{error.title}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+        </div>
+      )}
+
+      {timeoutNotice && (
+        <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+          <p className="font-semibold text-amber-700 dark:text-amber-400">
+            Processing Taking Longer Than Expected
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            We&apos;ll notify you if the workflow completes.
+          </p>
+        </div>
+      )}
+
       <div className="relative mb-6">
         <div
           className={cn(
             'relative rounded-2xl border transition-all duration-200',
-            focused
+            searchFocused
               ? 'border-primary/40 bg-card shadow-lg ring-4 ring-primary/10'
               : 'border-border bg-muted/30'
           )}
         >
           <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setTimeout(() => setFocused(false), 200)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
             placeholder="Search by Patient ID, Phone Number, or Name..."
             className="h-14 border-0 bg-transparent pl-14 pr-6 text-base shadow-none focus-visible:ring-0"
+            disabled={isRunning}
           />
         </div>
 
         <AnimatePresence>
-          {focused && suggestions.length > 0 && (
+          {searchFocused && searchResults.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               className="absolute top-full left-0 right-0 z-20 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-xl"
             >
-              {suggestions.map((patient) => (
+              {searchResults.map((patient) => (
                 <button
-                  key={patient.id}
+                  key={patient.patientId}
                   type="button"
-                  onMouseDown={() => handleSelect(patient)}
+                  onMouseDown={() => selectPatient(patient)}
                   className="flex w-full cursor-pointer items-center gap-4 border-b border-border/50 px-5 py-3.5 text-left transition-colors last:border-0 hover:bg-muted/60"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 font-mono text-xs font-bold text-primary">
-                    {patient.id.split('-')[1]}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium">{patient.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-mono">{patient.id}</span> · {patient.phone}
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <p className="font-mono text-sm font-semibold text-primary">
+                      {patient.patientId}
                     </p>
+                    <p className="font-medium">{formatDisplayName(patient.fullName)}</p>
+                    <p className="text-sm text-muted-foreground">{patient.phone}</p>
+                    <p className="text-sm text-muted-foreground">{patient.doctor}</p>
                   </div>
                 </button>
               ))}
@@ -179,10 +153,19 @@ export function ConsultationPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
         >
+          {isRunning && (
+            <div className="mb-6">
+              <WorkflowProgress
+                steps={[...CONSULTATION_WORKFLOW_STEPS]}
+                title="Saving Consultation"
+              />
+            </div>
+          )}
+
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              setSubmitted(true)
+              submit()
             }}
           >
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
@@ -198,6 +181,9 @@ export function ConsultationPage() {
                   onDiagnosisDateChange={setDiagnosisDate}
                   doctorNotes={doctorNotes}
                   onDoctorNotesChange={setDoctorNotes}
+                  skinProblemError={errors.skinProblem}
+                  infectionTypeError={errors.infectionType}
+                  diagnosisDateError={errors.diagnosisDate}
                 />
 
                 <PrescriptionBuilderSection
@@ -207,6 +193,7 @@ export function ConsultationPage() {
                   onUpdateMedicine={updateMedicine}
                   onRemoveMedicine={removeMedicine}
                   onAddMedicine={addMedicine}
+                  medicineErrors={errors.medicines}
                 />
 
                 <div className="grid gap-5 lg:grid-cols-2">
@@ -215,13 +202,15 @@ export function ConsultationPage() {
                     onFollowUpDateChange={setFollowUpDate}
                     followUpTime={followUpTime}
                     onFollowUpTimeChange={setFollowUpTime}
+                    followUpDateError={errors.followUpDate}
+                    followUpTimeError={errors.followUpTime}
                   />
                   <RemindersInfoCard />
                 </div>
 
                 <div className="xl:hidden">
                   <ConsultationSummaryCard
-                    patientName={selectedPatient.name}
+                    patientName={selectedPatient.fullName}
                     conditionType={infectionType}
                     skinProblem={skinProblem}
                     medicines={medicines}
@@ -234,14 +223,17 @@ export function ConsultationPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => {
-                      setSelectedPatient(null)
-                      resetForm()
-                    }}
+                    onClick={clearSelection}
+                    disabled={isRunning}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" variant="gradient" size="lg">
+                  <Button
+                    type="submit"
+                    variant="gradient"
+                    size="lg"
+                    disabled={!isValid || isRunning}
+                  >
                     Save Consultation
                   </Button>
                 </div>
@@ -251,7 +243,7 @@ export function ConsultationPage() {
                 <div className="sticky top-24 space-y-4">
                   <ConsultationSummaryCard
                     compact
-                    patientName={selectedPatient.name}
+                    patientName={selectedPatient.fullName}
                     conditionType={infectionType}
                     skinProblem={skinProblem}
                     medicines={medicines}

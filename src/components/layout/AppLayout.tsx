@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { useState } from 'react'
 import { Sidebar } from './Sidebar'
 import { TopNavbar } from './TopNavbar'
+import { TransactionNotificationStack } from '@/components/TransactionNotification'
 import { cn } from '@/lib/utils'
 
 export function AppLayout() {
@@ -10,6 +11,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
+      <TransactionNotificationStack />
       <Sidebar
         collapsed={sidebarCollapsed}
         mobileOpen={mobileOpen}

@@ -1,16 +1,42 @@
 import { User } from 'lucide-react'
 import { PatientStatusBadge } from '@/components/shared/StatusBadge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { Patient } from '@/data/types'
-import { getDoctorById } from '@/data/mockData'
+import type { PatientStatus } from '@/data/types'
+import { formatDisplayName } from '@/lib/patientDisplayFormat'
+import { formatPatientPhone } from '@/lib/patientSearch'
 import { formatDate } from '@/lib/utils'
 
+export interface ConsultationPatientSummary {
+  patientId: string
+  fullName: string
+  phone: string
+  doctor: string
+  status?: string
+  age?: number
+  gender?: string
+  registrationDate?: string
+}
+
 interface PatientSummaryCardProps {
-  patient: Patient
+  patient: ConsultationPatientSummary
+}
+
+const PATIENT_STATUSES: PatientStatus[] = [
+  'Registered',
+  'Consultation Pending',
+  'Active Treatment',
+  'Follow-Up Due',
+  'Completed',
+]
+
+function mapPatientStatus(status: string): PatientStatus | null {
+  if (PATIENT_STATUSES.includes(status as PatientStatus)) return status as PatientStatus
+  return null
 }
 
 export function PatientSummaryCard({ patient }: PatientSummaryCardProps) {
-  const doctor = getDoctorById(patient.doctorId)
+  const displayName = formatDisplayName(patient.fullName)
+  const mappedStatus = patient.status ? mapPatientStatus(patient.status) : null
 
   return (
     <Card className="overflow-hidden">
@@ -25,20 +51,23 @@ export function PatientSummaryCard({ patient }: PatientSummaryCardProps) {
               <User className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold tracking-tight">{patient.name}</h3>
-              <p className="font-mono text-sm text-primary">{patient.id}</p>
+              <h3 className="text-lg font-bold tracking-tight">{displayName}</h3>
+              <p className="font-mono text-sm text-primary">{patient.patientId}</p>
             </div>
           </div>
-          <PatientStatusBadge status={patient.status} />
+          {mappedStatus && <PatientStatusBadge status={mappedStatus} />}
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
-            { label: 'Age', value: `${patient.age} years` },
-            { label: 'Gender', value: patient.gender },
-            { label: 'Phone', value: patient.phone },
-            { label: 'Doctor', value: doctor?.name ?? '—' },
-            { label: 'Registered', value: formatDate(patient.registrationDate) },
-            { label: 'WhatsApp', value: patient.whatsapp },
+            { label: 'Age', value: patient.age ? `${patient.age} years` : '—' },
+            { label: 'Gender', value: patient.gender ?? '—' },
+            { label: 'Phone', value: formatPatientPhone(patient.phone) },
+            { label: 'Doctor', value: patient.doctor },
+            {
+              label: 'Registered',
+              value: patient.registrationDate ? formatDate(patient.registrationDate) : '—',
+            },
+            { label: 'WhatsApp', value: formatPatientPhone(patient.phone) },
           ].map((item) => (
             <div key={item.label} className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">

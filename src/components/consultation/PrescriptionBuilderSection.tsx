@@ -12,6 +12,7 @@ interface PrescriptionBuilderSectionProps {
   onUpdateMedicine: (index: number, medicine: ConsultationMedicineDraft) => void
   onRemoveMedicine: (index: number) => void
   onAddMedicine: () => void
+  medicineErrors?: Record<string, Partial<Record<keyof ConsultationMedicineDraft, string>>>
 }
 
 export function PrescriptionBuilderSection({
@@ -21,6 +22,7 @@ export function PrescriptionBuilderSection({
   onUpdateMedicine,
   onRemoveMedicine,
   onAddMedicine,
+  medicineErrors,
 }: PrescriptionBuilderSectionProps) {
   return (
     <Card>
@@ -49,6 +51,7 @@ export function PrescriptionBuilderSection({
             onChange={(m) => onUpdateMedicine(index, m)}
             onRemove={() => onRemoveMedicine(index)}
             canRemove={medicines.length > 1}
+            errors={medicineErrors?.[med.id]}
           />
         ))}
 

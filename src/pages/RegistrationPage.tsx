@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion'
-import { CheckCircle2, UserPlus } from 'lucide-react'
-import { useState } from 'react'
+import { UserPlus } from 'lucide-react'
+import { WorkflowProgress } from '@/components/WorkflowProgress'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { TransactionResultCard } from '@/components/shared/TransactionResultCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -15,89 +15,44 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { doctors } from '@/data/mockData'
+import { REGISTRATION_WORKFLOW_STEPS, useRegistration } from '@/hooks/useRegistration'
 import { cn } from '@/lib/utils'
 
-interface FormData {
-  fullName: string
-  age: string
-  gender: string
-  whatsapp: string
-  address: string
-  doctorId: string
-}
-
-interface FormErrors {
-  fullName?: string
-  age?: string
-  gender?: string
-  whatsapp?: string
-  address?: string
-  doctorId?: string
-}
-
 export function RegistrationPage() {
-  const [form, setForm] = useState<FormData>({
-    fullName: '',
-    age: '',
-    gender: '',
-    whatsapp: '',
-    address: '',
-    doctorId: '',
-  })
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [submitted, setSubmitted] = useState(false)
-  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const {
+    form,
+    errors,
+    isValid,
+    doctorNames,
+    updateField,
+    markTouched,
+    setTouchedAll,
+    submit,
+    resetForm,
+    isRunning,
+    success,
+    error,
+    timeoutNotice,
+  } = useRegistration()
 
-  const validate = (): FormErrors => {
-    const e: FormErrors = {}
-    if (!form.fullName.trim()) e.fullName = 'Full name is required'
-    if (!form.age || parseInt(form.age) < 1 || parseInt(form.age) > 120) e.age = 'Enter a valid age (1-120)'
-    if (!form.gender) e.gender = 'Please select gender'
-    if (!form.whatsapp.trim() || form.whatsapp.length < 10) e.whatsapp = 'Enter a valid WhatsApp number'
-    if (!form.address.trim()) e.address = 'Address is required'
-    if (!form.doctorId) e.doctorId = 'Please assign a doctor'
-    return e
-  }
+  const allDoctorNames = [
+    ...new Set([...doctorNames, ...doctors.map((d) => d.name)]),
+  ].sort((a, b) => a.localeCompare(b))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const validationErrors = validate()
-    setErrors(validationErrors)
-    setTouched({ fullName: true, age: true, gender: true, whatsapp: true, address: true, doctorId: true })
-    if (Object.keys(validationErrors).length === 0) {
-      setSubmitted(true)
-    }
+    setTouchedAll()
+    submit()
   }
 
-  const updateField = (field: keyof FormData, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
-    if (touched[field]) {
-      setErrors((prev) => {
-        const next = { ...prev }
-        delete next[field]
-        return next
-      })
-    }
-  }
-
-  if (submitted) {
+  if (success) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="mx-auto max-w-lg pt-12 text-center"
-      >
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950">
-          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
-        </div>
-        <h2 className="mt-6 text-2xl font-bold">Registration Successful</h2>
-        <p className="mt-2 text-muted-foreground">
-          {form.fullName} has been registered successfully. Patient ID: DERM-{Math.floor(Math.random() * 9000 + 1000)}
-        </p>
-        <Button className="mt-8" onClick={() => { setSubmitted(false); setForm({ fullName: '', age: '', gender: '', whatsapp: '', address: '', doctorId: '' }); setTouched({}) }}>
-          Register Another Patient
-        </Button>
-      </motion.div>
+      <TransactionResultCard
+        variant="success"
+        title={success.title}
+        lines={success.lines}
+        primaryAction={{ label: 'Register Another Patient', onClick: resetForm }}
+      />
     )
   }
 
@@ -107,6 +62,30 @@ export function RegistrationPage() {
         title="New Registration"
         description="Register a new patient to the clinic management system."
       />
+
+      {error && !error.isTimeout && (
+        <div className="mb-6 rounded-2xl border border-danger/30 bg-danger/5 p-4">
+          <p className="font-semibold text-danger">{error.title}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+        </div>
+      )}
+
+      {timeoutNotice && (
+        <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+          <p className="font-semibold text-amber-700 dark:text-amber-400">
+            Processing Taking Longer Than Expected
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            We&apos;ll notify you if the workflow completes.
+          </p>
+        </div>
+      )}
+
+      {isRunning && (
+        <div className="mb-6">
+          <WorkflowProgress steps={[...REGISTRATION_WORKFLOW_STEPS]} title="Registering Patient" />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <Card className="mb-6">
@@ -123,10 +102,11 @@ export function RegistrationPage() {
                 id="fullName"
                 value={form.fullName}
                 onChange={(e) => updateField('fullName', e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, fullName: true }))}
+                onBlur={() => markTouched('fullName')}
                 error={!!errors.fullName}
                 placeholder="Enter patient's full name"
                 className="mt-1.5"
+                disabled={isRunning}
               />
               {errors.fullName && <p className="mt-1 text-xs text-danger">{errors.fullName}</p>}
             </div>
@@ -137,16 +117,21 @@ export function RegistrationPage() {
                 type="number"
                 value={form.age}
                 onChange={(e) => updateField('age', e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, age: true }))}
+                onBlur={() => markTouched('age')}
                 error={!!errors.age}
                 placeholder="Age"
                 className="mt-1.5"
+                disabled={isRunning}
               />
               {errors.age && <p className="mt-1 text-xs text-danger">{errors.age}</p>}
             </div>
             <div>
               <Label>Gender</Label>
-              <Select value={form.gender} onValueChange={(v) => updateField('gender', v)}>
+              <Select
+                value={form.gender}
+                onValueChange={(v) => updateField('gender', v)}
+                disabled={isRunning}
+              >
                 <SelectTrigger className={cn('mt-1.5', errors.gender && 'border-danger')}>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -172,26 +157,33 @@ export function RegistrationPage() {
                 id="whatsapp"
                 value={form.whatsapp}
                 onChange={(e) => updateField('whatsapp', e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, whatsapp: true }))}
+                onBlur={() => markTouched('whatsapp')}
                 error={!!errors.whatsapp}
-                placeholder="+91 XXXXXXXXXX"
+                placeholder="10-digit number"
                 className="mt-1.5"
+                disabled={isRunning}
               />
               {errors.whatsapp && <p className="mt-1 text-xs text-danger">{errors.whatsapp}</p>}
             </div>
             <div>
               <Label>Assigned Doctor</Label>
-              <Select value={form.doctorId} onValueChange={(v) => updateField('doctorId', v)}>
-                <SelectTrigger className={cn('mt-1.5', errors.doctorId && 'border-danger')}>
+              <Select
+                value={form.doctorName}
+                onValueChange={(v) => updateField('doctorName', v)}
+                disabled={isRunning}
+              >
+                <SelectTrigger className={cn('mt-1.5', errors.doctorName && 'border-danger')}>
                   <SelectValue placeholder="Select doctor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {doctors.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  {allDoctorNames.map((name) => (
+                    <SelectItem key={name} value={name}>{name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.doctorId && <p className="mt-1 text-xs text-danger">{errors.doctorId}</p>}
+              {errors.doctorName && (
+                <p className="mt-1 text-xs text-danger">{errors.doctorName}</p>
+              )}
             </div>
             <div className="sm:col-span-2">
               <Label htmlFor="address">Address</Label>
@@ -199,10 +191,11 @@ export function RegistrationPage() {
                 id="address"
                 value={form.address}
                 onChange={(e) => updateField('address', e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, address: true }))}
+                onBlur={() => markTouched('address')}
                 error={!!errors.address}
                 placeholder="Full address"
                 className="mt-1.5"
+                disabled={isRunning}
               />
               {errors.address && <p className="mt-1 text-xs text-danger">{errors.address}</p>}
             </div>
@@ -210,8 +203,13 @@ export function RegistrationPage() {
         </Card>
 
         <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline">Cancel</Button>
-          <Button type="submit" variant="gradient" size="lg">
+          <Button type="button" variant="outline" disabled={isRunning}>Cancel</Button>
+          <Button
+            type="submit"
+            variant="gradient"
+            size="lg"
+            disabled={!isValid || isRunning}
+          >
             Register Patient
           </Button>
         </div>

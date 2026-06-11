@@ -1,6 +1,7 @@
 import { ProfileStatusBadge } from '@/components/patient-profile/StatusBadge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { PatientProfileOverview } from '@/data/patientProfileTypes'
+import { formatDisplayName } from '@/lib/patientDisplayFormat'
 import { formatDate } from '@/lib/utils'
 
 interface PatientInfoCardProps {
@@ -18,7 +19,7 @@ export function PatientInfoCard({ overview }: PatientInfoCardProps) {
       <CardContent>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold tracking-tight">{patient.name}</h2>
+            <h2 className="text-xl font-bold tracking-tight">{formatDisplayName(patient.name)}</h2>
             <p className="font-mono text-sm text-primary">{patient.id}</p>
           </div>
           <ProfileStatusBadge category="patient" status={patient.status} />

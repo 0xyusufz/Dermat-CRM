@@ -10,6 +10,8 @@ interface FollowUpScheduleCardProps {
   onFollowUpDateChange: (value: string) => void
   followUpTime: FollowUpTimeSlot
   onFollowUpTimeChange: (value: FollowUpTimeSlot) => void
+  followUpDateError?: string
+  followUpTimeError?: string
 }
 
 export function FollowUpScheduleCard({
@@ -17,6 +19,8 @@ export function FollowUpScheduleCard({
   onFollowUpDateChange,
   followUpTime,
   onFollowUpTimeChange,
+  followUpDateError,
+  followUpTimeError,
 }: FollowUpScheduleCardProps) {
   return (
     <Card>
@@ -36,8 +40,16 @@ export function FollowUpScheduleCard({
             value={followUpDate}
             onChange={(e) => onFollowUpDateChange(e.target.value)}
           />
+          {followUpDateError && (
+            <p className="mt-1 text-xs text-danger">{followUpDateError}</p>
+          )}
         </div>
-        <FollowUpTimeChipSelect value={followUpTime} onChange={onFollowUpTimeChange} />
+        <div>
+          <FollowUpTimeChipSelect value={followUpTime} onChange={onFollowUpTimeChange} />
+          {followUpTimeError && (
+            <p className="mt-1 text-xs text-danger">{followUpTimeError}</p>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -24,6 +25,7 @@ interface MedicineAccordionCardProps {
   onChange: (medicine: ConsultationMedicineDraft) => void
   onRemove: () => void
   canRemove: boolean
+  errors?: Partial<Record<keyof ConsultationMedicineDraft, string>>
 }
 
 export function MedicineAccordionCard({
@@ -34,6 +36,7 @@ export function MedicineAccordionCard({
   onChange,
   onRemove,
   canRemove,
+  errors,
 }: MedicineAccordionCardProps) {
   const title = medicine.medicineName.trim() || `Medicine ${index + 1}`
 
@@ -108,6 +111,9 @@ export function MedicineAccordionCard({
                   onChange={(e) => onChange({ ...medicine, medicineName: e.target.value })}
                   required
                 />
+                {errors?.medicineName && (
+                  <p className="mt-1 text-xs text-danger">{errors.medicineName}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor={`med-dose-${medicine.id}`}>Dosage</Label>
@@ -118,6 +124,9 @@ export function MedicineAccordionCard({
                   value={medicine.dosage}
                   onChange={(e) => onChange({ ...medicine, dosage: e.target.value })}
                 />
+                {errors?.dosage && (
+                  <p className="mt-1 text-xs text-danger">{errors.dosage}</p>
+                )}
               </div>
               <div>
                 <Label>Frequency</Label>
@@ -138,12 +147,18 @@ export function MedicineAccordionCard({
                     ))}
                   </SelectContent>
                 </Select>
+                {errors?.frequency && (
+                  <p className="mt-1 text-xs text-danger">{errors.frequency}</p>
+                )}
               </div>
               <div className="sm:col-span-2">
                 <TimingChipSelect
                   value={medicine.timing}
                   onChange={(timing) => onChange({ ...medicine, timing })}
                 />
+                {errors?.timing && (
+                  <p className="mt-1 text-xs text-danger">{errors.timing}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor={`med-start-${medicine.id}`} className="flex items-center gap-1.5">
@@ -161,6 +176,9 @@ export function MedicineAccordionCard({
                 <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
                   When this medicine should begin for the patient.
                 </p>
+                {errors?.startDate && (
+                  <p className="mt-1 text-xs text-danger">{errors.startDate}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor={`med-days-${medicine.id}`}>Duration (Days)</Label>
@@ -178,6 +196,26 @@ export function MedicineAccordionCard({
                   }
                   required
                 />
+                {errors?.durationDays && (
+                  <p className="mt-1 text-xs text-danger">{errors.durationDays}</p>
+                )}
+              </div>
+              <div className="sm:col-span-2">
+                <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background px-4 py-3">
+                  <div>
+                    <Label htmlFor={`med-reminder-${medicine.id}`}>Reminder</Label>
+                    <p className="text-[11px] text-muted-foreground">
+                      Send WhatsApp reminders for this medicine
+                    </p>
+                  </div>
+                  <Switch
+                    id={`med-reminder-${medicine.id}`}
+                    checked={medicine.reminder}
+                    onCheckedChange={(checked) =>
+                      onChange({ ...medicine, reminder: checked })
+                    }
+                  />
+                </div>
               </div>
               <div className="sm:col-span-2">
                 <Label htmlFor={`med-inst-${medicine.id}`}>Instructions</Label>
@@ -188,6 +226,9 @@ export function MedicineAccordionCard({
                   value={medicine.instructions}
                   onChange={(e) => onChange({ ...medicine, instructions: e.target.value })}
                 />
+                {errors?.instructions && (
+                  <p className="mt-1 text-xs text-danger">{errors.instructions}</p>
+                )}
               </div>
             </div>
           </motion.div>

@@ -22,6 +22,9 @@ interface ConditionInformationCardProps {
   onDiagnosisDateChange: (value: string) => void
   doctorNotes: string
   onDoctorNotesChange: (value: string) => void
+  skinProblemError?: string
+  infectionTypeError?: string
+  diagnosisDateError?: string
 }
 
 export function ConditionInformationCard({
@@ -33,6 +36,9 @@ export function ConditionInformationCard({
   onDiagnosisDateChange,
   doctorNotes,
   onDoctorNotesChange,
+  skinProblemError,
+  infectionTypeError,
+  diagnosisDateError,
 }: ConditionInformationCardProps) {
   return (
     <Card>
@@ -53,6 +59,9 @@ export function ConditionInformationCard({
             onChange={(e) => onSkinProblemChange(e.target.value)}
             required
           />
+          {skinProblemError && (
+            <p className="mt-1 text-xs text-danger">{skinProblemError}</p>
+          )}
         </div>
         <div>
           <Label>Infection Type</Label>
@@ -68,6 +77,9 @@ export function ConditionInformationCard({
               ))}
             </SelectContent>
           </Select>
+          {infectionTypeError && (
+            <p className="mt-1 text-xs text-danger">{infectionTypeError}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="diagnosis-date">Diagnosis Date</Label>
@@ -79,6 +91,9 @@ export function ConditionInformationCard({
             onChange={(e) => onDiagnosisDateChange(e.target.value)}
             required
           />
+          {diagnosisDateError && (
+            <p className="mt-1 text-xs text-danger">{diagnosisDateError}</p>
+          )}
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="doctor-notes">Clinical Notes</Label>
