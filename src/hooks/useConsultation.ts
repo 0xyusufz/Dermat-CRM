@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { PatientSearchIndexItem } from '@/api/types'
 import {
   createEmptyMedicine,
@@ -32,7 +33,12 @@ export const CONSULTATION_WORKFLOW_STEPS = [
 
 export type ConsultationSelectedPatient = PatientSearchIndexItem
 
-export function useConsultation() {
+interface UseConsultationProps {
+  initialPatientId?: string
+}
+
+export function useConsultation({ initialPatientId }: UseConsultationProps = {}) {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<ConsultationSelectedPatient | null>(null)
@@ -53,10 +59,24 @@ export function useConsultation() {
   const [followUpTime, setFollowUpTime] = useState<FollowUpTimeSlot>('Morning')
   const [showValidation, setShowValidation] = useState(false)
 
+  // Success metadata for routing
+  const [lastRequestId, setLastRequestId] = useState<string | null>(null)
+  const [lastPatientId, setLastPatientId] = useState<string | null>(null)
+
   const { data: dashboard } = useDashboard()
   const searchIndex = dashboard?.patientSearchIndex
   const { results: searchResults } = usePatientSearch(searchIndex, searchQuery)
   const transaction = useWorkflowTransaction()
+
+  // Auto-restore patient from URL
+  useEffect(() => {
+    if (initialPatientId && searchIndex && !selectedPatient) {
+      const found = searchIndex.find((p) => p.patientId === initialPatientId)
+      if (found) {
+        setSelectedPatient(found)
+      }
+    }
+  }, [initialPatientId, searchIndex, selectedPatient])
 
   const formValues = useMemo(
     () => ({
@@ -81,6 +101,7 @@ export function useConsultation() {
     setSelectedPatient(patient)
     setSearchQuery('')
     setSearchFocused(false)
+    navigate(`/consultation/${patient.patientId}`)
   }
 
   const resetForm = useCallback(() => {
@@ -94,6 +115,8 @@ export function useConsultation() {
     setFollowUpDate('')
     setFollowUpTime('Morning')
     setShowValidation(false)
+    setLastRequestId(null)
+    setLastPatientId(null)
     transaction.clearStates()
   }, [transaction])
 
@@ -145,10 +168,14 @@ export function useConsultation() {
           'Follow-Up Date': followUpDate,
           'Follow-Up Time': followUpTime,
         }),
-      buildSuccess: (data) => ({
-        title: 'Consultation Created',
-        lines: formatConsultationSuccessLines(data),
-      }),
+      buildSuccess: (data) => {
+        setLastRequestId(data.requestId)
+        setLastPatientId(data.patient.code)
+        return {
+          title: 'Consultation Created',
+          lines: formatConsultationSuccessLines(data),
+        }
+      },
       buildLateNotification: (data) => ({
         title: 'Recent Consultation Completed',
         lines: [
@@ -162,6 +189,7 @@ export function useConsultation() {
   const clearSelection = () => {
     setSelectedPatient(null)
     resetForm()
+    navigate('/consultation')
   }
 
   return {
@@ -195,6 +223,8 @@ export function useConsultation() {
     isValid,
     submit,
     resetForm,
+    lastRequestId,
+    lastPatientId,
     ...transaction,
   }
 }

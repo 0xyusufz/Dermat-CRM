@@ -1,12 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { ConditionInformationCard } from '@/components/consultation/ConditionInformationCard'
 import { ConsultationSummaryCard } from '@/components/consultation/ConsultationSummaryCard'
 import { FollowUpScheduleCard } from '@/components/consultation/FollowUpScheduleCard'
 import { PatientSummaryCard } from '@/components/consultation/PatientSummaryCard'
 import { PrescriptionBuilderSection } from '@/components/consultation/PrescriptionBuilderSection'
 import { RemindersInfoCard } from '@/components/consultation/RemindersInfoCard'
-import { WorkflowProgress } from '@/components/WorkflowProgress'
+import { WorkflowModal } from '@/components/workflow/WorkflowModal'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TransactionResultCard } from '@/components/shared/TransactionResultCard'
 import { Button } from '@/components/ui/button'
@@ -16,7 +17,9 @@ import { formatDisplayName } from '@/lib/patientDisplayFormat'
 import { cn } from '@/lib/utils'
 
 export function ConsultationPage() {
-  const consultation = useConsultation()
+  const { patientId } = useParams<{ patientId: string }>()
+  const navigate = useNavigate()
+  const consultation = useConsultation({ initialPatientId: patientId })
   const {
     searchQuery,
     setSearchQuery,
@@ -52,6 +55,8 @@ export function ConsultationPage() {
     success,
     error,
     timeoutNotice,
+    lastPatientId,
+    lastRequestId,
   } = consultation
 
   if (success) {
@@ -59,8 +64,19 @@ export function ConsultationPage() {
       <TransactionResultCard
         variant="success"
         title={success.title}
-        lines={success.lines}
+        lines={[
+          ...success.lines,
+          ...(lastRequestId ? [{ label: 'Request ID', value: lastRequestId }] : []),
+        ]}
         primaryAction={{
+          label: 'View Patient',
+          onClick: () => {
+            if (lastPatientId) {
+              navigate(`/patients/${lastPatientId}`)
+            }
+          },
+        }}
+        secondaryAction={{
           label: 'New Consultation',
           onClick: () => {
             clearSelection()
@@ -153,14 +169,11 @@ export function ConsultationPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
         >
-          {isRunning && (
-            <div className="mb-6">
-              <WorkflowProgress
-                steps={[...CONSULTATION_WORKFLOW_STEPS]}
-                title="Saving Consultation"
-              />
-            </div>
-          )}
+          <WorkflowModal
+            open={isRunning}
+            steps={[...CONSULTATION_WORKFLOW_STEPS]}
+            title="Saving Consultation"
+          />
 
           <form
             onSubmit={(e) => {

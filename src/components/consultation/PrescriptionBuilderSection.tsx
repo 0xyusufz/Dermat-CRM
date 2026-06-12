@@ -50,7 +50,7 @@ export function PrescriptionBuilderSection({
             onToggle={() => onToggleMedicine(med.id)}
             onChange={(m) => onUpdateMedicine(index, m)}
             onRemove={() => onRemoveMedicine(index)}
-            canRemove={medicines.length > 1}
+            canRemove={true}
             errors={medicineErrors?.[med.id]}
           />
         ))}

@@ -5,16 +5,24 @@ export function formatWhatsAppSent(sent: boolean): string {
   return sent ? 'Sent' : 'Not sent'
 }
 
-export function formatRegistrationSuccessLines(data: {
-  patient: { name: string; code: string }
-  doctor: { name: string }
-  whatsapp: { sent: boolean }
-}): Array<{ label: string; value: string }> {
+export function formatRegistrationSuccessLines(
+  data: {
+    patient: { name: string; code: string }
+    doctor: { name: string }
+    whatsapp: { sent: boolean }
+  },
+  formValues: { age: string; gender: string },
+  requestId: string
+): Array<{ label: string; value: string }> {
   return [
-    { label: 'Patient', value: data.patient.code },
-    { label: 'Name', value: formatDisplayName(data.patient.name) },
+    { label: 'Patient ID', value: data.patient.code },
+    { label: 'Patient Name', value: formatDisplayName(data.patient.name) },
+    { label: 'Age', value: `${formValues.age} years` },
+    { label: 'Gender', value: formValues.gender },
     { label: 'Doctor', value: data.doctor.name },
-    { label: 'WhatsApp', value: formatWhatsAppSent(data.whatsapp.sent) },
+    { label: 'WhatsApp Status', value: formatWhatsAppSent(data.whatsapp.sent) },
+    { label: 'Registration Date', value: formatDate(new Date().toISOString().split('T')[0]) },
+    { label: 'Request ID', value: requestId },
   ]
 }
 

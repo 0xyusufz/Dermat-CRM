@@ -39,6 +39,7 @@ export function MedicineAccordionCard({
   errors,
 }: MedicineAccordionCardProps) {
   const title = medicine.medicineName.trim() || `Medicine ${index + 1}`
+  const isMedicineEmpty = !medicine.medicineName.trim()
 
   return (
     <div
@@ -123,6 +124,7 @@ export function MedicineAccordionCard({
                   placeholder="e.g. 20mg oral"
                   value={medicine.dosage}
                   onChange={(e) => onChange({ ...medicine, dosage: e.target.value })}
+                  disabled={isMedicineEmpty}
                 />
                 {errors?.dosage && (
                   <p className="mt-1 text-xs text-danger">{errors.dosage}</p>
@@ -135,6 +137,7 @@ export function MedicineAccordionCard({
                   onValueChange={(v) =>
                     onChange({ ...medicine, frequency: v as FrequencyOption })
                   }
+                  disabled={isMedicineEmpty}
                 >
                   <SelectTrigger className="mt-1.5 bg-background">
                     <SelectValue />
@@ -155,6 +158,7 @@ export function MedicineAccordionCard({
                 <TimingChipSelect
                   value={medicine.timing}
                   onChange={(timing) => onChange({ ...medicine, timing })}
+                  disabled={isMedicineEmpty}
                 />
                 {errors?.timing && (
                   <p className="mt-1 text-xs text-danger">{errors.timing}</p>
@@ -171,7 +175,8 @@ export function MedicineAccordionCard({
                   className="mt-1.5 bg-background"
                   value={medicine.startDate}
                   onChange={(e) => onChange({ ...medicine, startDate: e.target.value })}
-                  required
+                  disabled={isMedicineEmpty}
+                  required={!isMedicineEmpty}
                 />
                 <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
                   When this medicine should begin for the patient.
@@ -187,21 +192,25 @@ export function MedicineAccordionCard({
                   type="number"
                   min={1}
                   className="mt-1.5 bg-background"
-                  value={medicine.durationDays}
+                  value={medicine.durationDays === 0 ? '' : medicine.durationDays}
                   onChange={(e) =>
                     onChange({
                       ...medicine,
-                      durationDays: Math.max(1, Number(e.target.value) || 1),
+                      durationDays: Math.max(0, Number(e.target.value) || 0),
                     })
                   }
-                  required
+                  disabled={isMedicineEmpty}
+                  required={!isMedicineEmpty}
                 />
                 {errors?.durationDays && (
                   <p className="mt-1 text-xs text-danger">{errors.durationDays}</p>
                 )}
               </div>
               <div className="sm:col-span-2">
-                <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background px-4 py-3">
+                <div className={cn(
+                  'flex items-center justify-between rounded-xl border border-border/60 bg-background px-4 py-3 transition-opacity',
+                  isMedicineEmpty && 'opacity-50 pointer-events-none'
+                )}>
                   <div>
                     <Label htmlFor={`med-reminder-${medicine.id}`}>Reminder</Label>
                     <p className="text-[11px] text-muted-foreground">
@@ -214,6 +223,7 @@ export function MedicineAccordionCard({
                     onCheckedChange={(checked) =>
                       onChange({ ...medicine, reminder: checked })
                     }
+                    disabled={isMedicineEmpty}
                   />
                 </div>
               </div>
@@ -225,6 +235,7 @@ export function MedicineAccordionCard({
                   placeholder="Special instructions..."
                   value={medicine.instructions}
                   onChange={(e) => onChange({ ...medicine, instructions: e.target.value })}
+                  disabled={isMedicineEmpty}
                 />
                 {errors?.instructions && (
                   <p className="mt-1 text-xs text-danger">{errors.instructions}</p>

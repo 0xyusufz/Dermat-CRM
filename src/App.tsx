@@ -20,6 +20,7 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="registration" element={<RegistrationPage />} />
             <Route path="consultation" element={<ConsultationPage />} />
+            <Route path="consultation/:patientId" element={<ConsultationPage />} />
             <Route path="patients" element={<AllPatientsPage />} />
             <Route path="patients/active" element={<AllPatientsPage filterActive />} />
             <Route path="patients/:id" element={<PatientProfilePage />} />

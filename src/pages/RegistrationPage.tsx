@@ -1,5 +1,6 @@
 import { UserPlus } from 'lucide-react'
-import { WorkflowProgress } from '@/components/WorkflowProgress'
+import { useNavigate } from 'react-router-dom'
+import { WorkflowModal } from '@/components/workflow/WorkflowModal'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TransactionResultCard } from '@/components/shared/TransactionResultCard'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ import { REGISTRATION_WORKFLOW_STEPS, useRegistration } from '@/hooks/useRegistr
 import { cn } from '@/lib/utils'
 
 export function RegistrationPage() {
+  const navigate = useNavigate()
   const {
     form,
     errors,
@@ -33,6 +35,7 @@ export function RegistrationPage() {
     success,
     error,
     timeoutNotice,
+    lastPatientCode,
   } = useRegistration()
 
   const allDoctorNames = [
@@ -51,7 +54,15 @@ export function RegistrationPage() {
         variant="success"
         title={success.title}
         lines={success.lines}
-        primaryAction={{ label: 'Register Another Patient', onClick: resetForm }}
+        primaryAction={{
+          label: 'Create Consultation',
+          onClick: () => {
+            if (lastPatientCode) {
+              navigate(`/consultation/${lastPatientCode}`)
+            }
+          },
+        }}
+        secondaryAction={{ label: 'Register Another Patient', onClick: resetForm }}
       />
     )
   }
@@ -81,11 +92,11 @@ export function RegistrationPage() {
         </div>
       )}
 
-      {isRunning && (
-        <div className="mb-6">
-          <WorkflowProgress steps={[...REGISTRATION_WORKFLOW_STEPS]} title="Registering Patient" />
-        </div>
-      )}
+      <WorkflowModal
+        open={isRunning}
+        steps={[...REGISTRATION_WORKFLOW_STEPS]}
+        title="Registering Patient"
+      />
 
       <form onSubmit={handleSubmit}>
         <Card className="mb-6">
