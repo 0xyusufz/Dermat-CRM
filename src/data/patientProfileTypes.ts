@@ -123,6 +123,8 @@ export interface UpsertFollowUpInput {
   date: string
   timeSlot: FollowUpTimeSlot
   source?: FollowUpSource
+  reason?: string
+  clinicNotes?: string
 }
 
 export interface RescheduleFollowUpInput {
