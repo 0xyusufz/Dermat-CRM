@@ -60,8 +60,8 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
   const [showValidation, setShowValidation] = useState(false)
 
   // Success metadata for routing
-  const [lastRequestId, setLastRequestId] = useState<string | null>(null)
   const [lastPatientId, setLastPatientId] = useState<string | null>(null)
+  const [notFound, setNotFound] = useState(false)
 
   const { data: dashboard } = useDashboard()
   const searchIndex = dashboard?.patientSearchIndex
@@ -74,7 +74,12 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
       const found = searchIndex.find((p) => p.patientId === initialPatientId)
       if (found) {
         setSelectedPatient(found)
+        setNotFound(false)
+      } else {
+        setNotFound(true)
       }
+    } else if (!initialPatientId) {
+      setNotFound(false)
     }
   }, [initialPatientId, searchIndex, selectedPatient])
 
@@ -99,6 +104,7 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
 
   const selectPatient = (patient: ConsultationSelectedPatient) => {
     setSelectedPatient(patient)
+    setNotFound(false)
     setSearchQuery('')
     setSearchFocused(false)
     navigate(`/consultation/${patient.patientId}`)
@@ -115,8 +121,8 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
     setFollowUpDate('')
     setFollowUpTime('Morning')
     setShowValidation(false)
-    setLastRequestId(null)
     setLastPatientId(null)
+    setNotFound(false)
     transaction.clearStates()
   }, [transaction])
 
@@ -169,7 +175,6 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
           'Follow-Up Time': followUpTime,
         }),
       buildSuccess: (data) => {
-        setLastRequestId(data.requestId)
         setLastPatientId(data.patient.code)
         return {
           title: 'Consultation Created',
@@ -223,8 +228,8 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
     isValid,
     submit,
     resetForm,
-    lastRequestId,
     lastPatientId,
+    notFound,
     ...transaction,
   }
 }

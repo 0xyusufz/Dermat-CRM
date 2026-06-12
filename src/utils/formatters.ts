@@ -11,8 +11,7 @@ export function formatRegistrationSuccessLines(
     doctor: { name: string }
     whatsapp: { sent: boolean }
   },
-  formValues: { age: string; gender: string },
-  requestId: string
+  formValues: { age: string; gender: string }
 ): Array<{ label: string; value: string }> {
   return [
     { label: 'Patient ID', value: data.patient.code },
@@ -22,7 +21,6 @@ export function formatRegistrationSuccessLines(
     { label: 'Doctor', value: data.doctor.name },
     { label: 'WhatsApp Status', value: formatWhatsAppSent(data.whatsapp.sent) },
     { label: 'Registration Date', value: formatDate(new Date().toISOString().split('T')[0]) },
-    { label: 'Request ID', value: requestId },
   ]
 }
 

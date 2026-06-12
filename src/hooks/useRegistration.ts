@@ -61,7 +61,6 @@ export function useRegistration() {
     setTouched((prev) => ({ ...prev, [field]: true }))
   }
 
-  const [lastRequestId, setLastRequestId] = useState<string | null>(null)
   const [lastPatientCode, setLastPatientCode] = useState<string | null>(null)
 
   const buildPayload = (): RegistrationRequest => ({
@@ -81,11 +80,10 @@ export function useRegistration() {
       steps: [...REGISTRATION_WORKFLOW_STEPS],
       apiCall: () => registerPatient(buildPayload()),
       buildSuccess: (data) => {
-        setLastRequestId(data.requestId)
         setLastPatientCode(data.patient.code)
         return {
           title: 'Patient Registered Successfully',
-          lines: formatRegistrationSuccessLines(data, form, data.requestId),
+          lines: formatRegistrationSuccessLines(data, form),
         }
       },
       buildLateNotification: (data) => ({
@@ -101,7 +99,6 @@ export function useRegistration() {
   const resetForm = () => {
     setForm(EMPTY_FORM)
     setTouched({})
-    setLastRequestId(null)
     setLastPatientCode(null)
     transaction.clearStates()
   }
@@ -126,7 +123,6 @@ export function useRegistration() {
     submit,
     resetForm,
     lastPatientCode,
-    lastRequestId,
     ...transaction,
   }
 }

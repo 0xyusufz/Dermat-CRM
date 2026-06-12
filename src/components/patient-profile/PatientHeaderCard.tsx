@@ -94,7 +94,7 @@ export function PatientHeaderCard({ overview, onFollowUpAction }: PatientHeaderC
               )}
             </Button>
             <Button variant="outline" asChild>
-              <Link to={`/consultation?patient=${patient.id}`}>New Consultation</Link>
+              <Link to={`/consultation/${patient.id}`}>New Consultation</Link>
             </Button>
           </div>
         </div>

@@ -56,7 +56,7 @@ export function ConsultationPage() {
     error,
     timeoutNotice,
     lastPatientId,
-    lastRequestId,
+    notFound,
   } = consultation
 
   if (success) {
@@ -64,10 +64,7 @@ export function ConsultationPage() {
       <TransactionResultCard
         variant="success"
         title={success.title}
-        lines={[
-          ...success.lines,
-          ...(lastRequestId ? [{ label: 'Request ID', value: lastRequestId }] : []),
-        ]}
+        lines={success.lines}
         primaryAction={{
           label: 'View Patient',
           onClick: () => {
@@ -84,6 +81,21 @@ export function ConsultationPage() {
           },
         }}
       />
+    )
+  }
+
+  if (notFound) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16 text-center">
+        <Search className="h-11 w-11 text-muted-foreground/40" />
+        <h2 className="mt-4 text-xl font-bold tracking-tight">Patient Not Found</h2>
+        <p className="mt-1 max-w-md text-sm text-muted-foreground">
+          We couldn't find a patient with the ID "{patientId}".
+        </p>
+        <Button className="mt-6" variant="outline" onClick={() => navigate('/consultation')}>
+          Back To Consultation Search
+        </Button>
+      </div>
     )
   }
 
