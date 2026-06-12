@@ -9,6 +9,7 @@ interface TransactionResultCardProps {
   lines?: Array<{ label: string; value: string }>
   message?: string
   primaryAction?: { label: string; onClick: () => void }
+  secondaryAction?: { label: string; onClick: () => void }
   className?: string
 }
 
@@ -18,6 +19,7 @@ export function TransactionResultCard({
   lines,
   message,
   primaryAction,
+  secondaryAction,
   className,
 }: TransactionResultCardProps) {
   const Icon =
@@ -56,10 +58,19 @@ export function TransactionResultCard({
           ))}
         </dl>
       )}
-      {primaryAction && (
-        <Button className="mt-8" onClick={primaryAction.onClick}>
-          {primaryAction.label}
-        </Button>
+      {(primaryAction || secondaryAction) && (
+        <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+          {secondaryAction && (
+            <Button variant="outline" onClick={secondaryAction.onClick}>
+              {secondaryAction.label}
+            </Button>
+          )}
+          {primaryAction && (
+            <Button onClick={primaryAction.onClick}>
+              {primaryAction.label}
+            </Button>
+          )}
+        </div>
       )}
     </motion.div>
   )

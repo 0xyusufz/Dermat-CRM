@@ -88,6 +88,7 @@ export function ConditionInformationCard({
             type="date"
             className="mt-1.5"
             value={diagnosisDate}
+            min={new Date().toISOString().split('T')[0]}
             onChange={(e) => onDiagnosisDateChange(e.target.value)}
             required
           />

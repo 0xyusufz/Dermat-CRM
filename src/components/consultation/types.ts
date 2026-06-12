@@ -42,7 +42,7 @@ export function createEmptyMedicine(): ConsultationMedicineDraft {
     timing: [],
     frequency: 'Daily',
     startDate: new Date().toISOString().split('T')[0],
-    durationDays: 30,
+    durationDays: 0,
     instructions: '',
     reminder: false,
   }

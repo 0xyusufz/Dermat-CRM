@@ -80,7 +80,13 @@ export function validateMedicineDraft(med: ConsultationMedicineDraft): Partial<
   if (!med.dosage.trim()) errors.dosage = 'Dosage is required'
   if (med.timing.length === 0) errors.timing = 'Select at least one timing'
   if (!med.frequency) errors.frequency = 'Frequency is required'
-  if (!med.durationDays || med.durationDays < 1) errors.durationDays = 'Duration is required'
+  if (
+    !med.durationDays ||
+    med.durationDays < 1 ||
+    !Number.isInteger(med.durationDays)
+  ) {
+    errors.durationDays = 'Duration must be a whole number (minimum 1 day)'
+  }
   if (!med.instructions.trim()) errors.instructions = 'Instructions are required'
   if (!med.startDate) errors.startDate = 'Start date is required'
 
@@ -94,7 +100,16 @@ export function validateConsultationForm(
 
   if (!values.skinProblem.trim()) errors.skinProblem = 'Skin problem is required'
   if (!values.infectionType) errors.infectionType = 'Infection type is required'
-  if (!values.diagnosisDate) errors.diagnosisDate = 'Diagnosis date is required'
+
+  if (!values.diagnosisDate) {
+    errors.diagnosisDate = 'Diagnosis date is required'
+  } else {
+    const today = new Date().toISOString().split('T')[0]
+    if (values.diagnosisDate < today) {
+      errors.diagnosisDate = 'Diagnosis date cannot be in the past'
+    }
+  }
+
   if (!values.followUpDate) errors.followUpDate = 'Follow-up date is required'
   if (!values.followUpTime) errors.followUpTime = 'Follow-up time is required'
 

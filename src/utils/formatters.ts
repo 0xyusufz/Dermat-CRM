@@ -26,11 +26,10 @@ export function formatConsultationSuccessLines(data: {
 }): Array<{ label: string; value: string }> {
   return [
     { label: 'Patient', value: data.patient.code },
+    { label: 'Patient Name', value: formatDisplayName(data.patient.name) },
     { label: 'Condition', value: data.condition.id },
-    { label: 'Medicines', value: String(data.Medicine.count) },
-    {
-      label: 'Follow Up',
-      value: `${formatDate(data.followup.date)}\n${data.followup.time}`,
-    },
+    { label: 'Medicines', value: `${data.Medicine.count} prescribed` },
+    { label: 'Follow-Up Date', value: formatDate(data.followup.date) },
+    { label: 'Follow-Up Time', value: data.followup.time },
   ]
 }
