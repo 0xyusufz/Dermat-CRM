@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
+import { triggerPostWriteSync } from '@/services/postWriteSync'
 import type { PatientSearchIndexItem } from '@/api/types'
 import {
   createEmptyMedicine,
@@ -67,6 +69,8 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
   const searchIndex = dashboard?.patientSearchIndex
   const { results: searchResults } = usePatientSearch(searchIndex, searchQuery)
   const transaction = useWorkflowTransaction()
+  const queryClient = useQueryClient()
+
 
   // Auto-restore patient from URL
   useEffect(() => {
@@ -176,6 +180,19 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
         }),
       buildSuccess: (data) => {
         setLastPatientId(data.patient.code)
+
+        triggerPostWriteSync({
+          queryClient,
+          actionType: 'CREATE_CONSULTATION',
+          patientId: data.patient.code,
+          response: {
+            ...data,
+            skinProblem: skinProblem.trim(),
+            infectionType,
+            diagnosisDate,
+          },
+        })
+
         return {
           title: 'Consultation Created',
           lines: formatConsultationSuccessLines(data),

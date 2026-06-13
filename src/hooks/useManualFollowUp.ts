@@ -1,4 +1,6 @@
 import { useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { triggerPostWriteSync } from '@/services/postWriteSync'
 import type { UpsertFollowUpInput } from '@/data/patientProfileTypes'
 import type { Patient } from '@/data/types'
 import { useWorkflowTransaction } from '@/hooks/useWorkflowTransaction'
@@ -13,6 +15,8 @@ export const MANUAL_FOLLOW_UP_WORKFLOW_STEPS = [
 
 export function useManualFollowUp() {
   const transaction = useWorkflowTransaction()
+  const queryClient = useQueryClient()
+
 
   const submit = useCallback(
     async (patient: Patient, input: UpsertFollowUpInput) => {
@@ -27,6 +31,13 @@ export function useManualFollowUp() {
             'Clinic Notes': input.clinicNotes,
           }),
         buildSuccess: (data) => {
+          triggerPostWriteSync({
+            queryClient,
+            actionType: 'SCHEDULE_FOLLOW_UP',
+            patientId: data.patient.code,
+            response: data,
+          })
+
           const formattedDate = new Date(data.followup.date).toLocaleDateString('en-GB', {
             day: 'numeric',
             month: 'short',
@@ -52,7 +63,7 @@ export function useManualFollowUp() {
         }),
       })
     },
-    [transaction]
+    [transaction, queryClient]
   )
 
   return {

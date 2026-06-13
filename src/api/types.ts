@@ -86,4 +86,5 @@ export interface DashboardData {
   patientSearchIndex?: PatientSearchIndexItem[]
   meta?: Record<string, unknown>
   generatedAt?: string
+  optimisticCreatedAt?: number
 }

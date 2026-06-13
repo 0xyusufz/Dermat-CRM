@@ -223,6 +223,8 @@ export interface PatientProfileSnapshot {
   activeFollowup: PatientFollowUpRecord | null
   followupHistory: FollowUpHistoryItem[]
   timeline: PatientTimelineEvent[]
+  snapshotGeneratedAt?: string
+  optimisticCreatedAt?: number
 }
 
 export function countActiveConditions(conditions: PatientCondition[]): number {

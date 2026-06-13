@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDashboard } from '@/hooks/useDashboard'
 import { useWorkflowTransaction } from '@/hooks/useWorkflowTransaction'
+import { triggerPostWriteSync } from '@/services/postWriteSync'
 import {
   registerPatient,
   type RegistrationRequest,
@@ -36,6 +38,8 @@ export function useRegistration() {
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const { data: dashboard } = useDashboard()
   const transaction = useWorkflowTransaction()
+  const queryClient = useQueryClient()
+
 
   const doctorNames = useMemo(() => {
     const fromIndex = dashboard?.patientSearchIndex?.map((p) => p.doctor) ?? []
@@ -81,6 +85,23 @@ export function useRegistration() {
       apiCall: () => registerPatient(buildPayload()),
       buildSuccess: (data) => {
         setLastPatientCode(data.patient.code)
+
+        triggerPostWriteSync({
+          queryClient,
+          actionType: 'REGISTER_PATIENT',
+          response: {
+            ...data,
+            formContext: {
+              fullName: form.fullName.trim(),
+              age: form.age,
+              gender: form.gender,
+              whatsapp: normalizeWhatsAppDigits(form.whatsapp),
+              address: form.address.trim(),
+              doctorName: form.doctorName,
+            },
+          },
+        })
+
         return {
           title: 'Patient Registered Successfully',
           lines: formatRegistrationSuccessLines(data, form),

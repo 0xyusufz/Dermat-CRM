@@ -224,5 +224,6 @@ export function mapPatientApiResponse(api: PatientApiResponse): PatientProfileSn
     activeFollowup,
     followupHistory: buildFollowUpHistory(api.followups),
     timeline: mapTimeline(api),
+    snapshotGeneratedAt: api.snapshotGeneratedAt,
   }
 }
