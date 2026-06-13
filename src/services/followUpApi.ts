@@ -16,9 +16,31 @@ export interface ManualFollowUpResponseData {
   followup: {
     date: string
     time: string
+    status?: string
   }
 }
 
 export function createManualFollowUp(payload: ManualFollowUpRequest) {
   return apiPost<ManualFollowUpResponseData>('/followups/manual', payload)
+}
+
+export interface RescheduleFollowUpRequest {
+  Patient: string
+  'Reschedule Follow-Up Date': string
+  'Follow-Up Time': string
+  'Reschedule Reason': string
+}
+
+export function rescheduleFollowUp(payload: RescheduleFollowUpRequest) {
+  return apiPost<ManualFollowUpResponseData>('/followups/reschedule', payload)
+}
+
+export interface CompleteFollowUpRequest {
+  Patient: string
+  'Completion Status': string
+  'Visit Notes'?: string
+}
+
+export function completeFollowUp(payload: CompleteFollowUpRequest) {
+  return apiPost<ManualFollowUpResponseData>('/followups/complete', payload)
 }

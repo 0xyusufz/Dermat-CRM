@@ -29,9 +29,11 @@ function FollowupStatusBadge({ status }: { status: string }) {
 
 interface TodayFollowupsProps {
   followups: TodayFollowupItem[]
+  onComplete?: (fu: TodayFollowupItem) => void
+  onReschedule?: (fu: TodayFollowupItem) => void
 }
 
-export function TodayFollowups({ followups }: TodayFollowupsProps) {
+export function TodayFollowups({ followups, onComplete, onReschedule }: TodayFollowupsProps) {
   return (
     <Card>
       <CardHeader>
@@ -63,10 +65,10 @@ export function TodayFollowups({ followups }: TodayFollowupsProps) {
                   </td>
                   <td className="py-3">
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => onComplete?.(fu)}>
                         Complete
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => onReschedule?.(fu)}>
                         Reschedule
                       </Button>
                     </div>
@@ -80,3 +82,4 @@ export function TodayFollowups({ followups }: TodayFollowupsProps) {
     </Card>
   )
 }
+

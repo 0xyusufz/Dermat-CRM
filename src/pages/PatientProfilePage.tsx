@@ -16,15 +16,18 @@ import { AddMedicineModal } from '@/components/patient-profile/modals/AddMedicin
 import { CompleteFollowUpModal } from '@/components/patient-profile/modals/CompleteFollowUpModal'
 import { ManageFollowUpModal } from '@/components/patient-profile/modals/ManageFollowUpModal'
 import { RescheduleFollowUpModal } from '@/components/patient-profile/modals/RescheduleFollowUpModal'
-import { ManualFollowUpSuccessModal } from '@/components/patient-profile/modals/ManualFollowUpSuccessModal'
-import { WorkflowModal } from '@/components/workflow/WorkflowModal'
-import { TransactionResultCard } from '@/components/shared/TransactionResultCard'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { PatientFollowUpRecord, UpsertFollowUpInput } from '@/data/patientProfileTypes'
 import { usePatientProfile } from '@/hooks/usePatientProfile'
 import { useManualFollowUp, MANUAL_FOLLOW_UP_WORKFLOW_STEPS } from '@/hooks/useManualFollowUp'
+import { useRescheduleFollowUp, RESCHEDULE_FOLLOW_UP_WORKFLOW_STEPS } from '@/hooks/useRescheduleFollowUp'
+import { useCompleteFollowUp, COMPLETE_FOLLOW_UP_WORKFLOW_STEPS } from '@/hooks/useCompleteFollowUp'
+import { useCreatePrescription, CREATE_PRESCRIPTION_WORKFLOW_STEPS } from '@/hooks/useCreatePrescription'
+import { useUpdatePrescription, UPDATE_PRESCRIPTION_WORKFLOW_STEPS } from '@/hooks/useUpdatePrescription'
+import { useDiscontinuePrescription, DISCONTINUE_PRESCRIPTION_WORKFLOW_STEPS } from '@/hooks/useDiscontinuePrescription'
+import { TransactionModals } from '@/components/workflow/TransactionModals'
 
 const TAB_VALUES = ['overview', 'conditions', 'follow-ups', 'timeline'] as const
 
@@ -46,21 +49,16 @@ export function PatientProfilePage() {
     isNetworkError,
     reload,
     isFetching,
-    addMedicine,
-    updateMedicine,
-    discontinueMedicine: discontinueMedicineAction,
-    completeFollowUp,
-    rescheduleFollowUp,
   } = usePatientProfile(patientId)
 
-  const {
-    isRunning,
-    success,
-    error,
-    timeoutNotice,
-    submit: submitManualFollowUp,
-    clearStates,
-  } = useManualFollowUp()
+  const manualFollowUpHook = useManualFollowUp()
+  const rescheduleHook = useRescheduleFollowUp()
+  const completeFollowUpHook = useCompleteFollowUp()
+  const createPrescriptionHook = useCreatePrescription()
+  const updatePrescriptionHook = useUpdatePrescription()
+  const discontinuePrescriptionHook = useDiscontinuePrescription()
+
+  const { error } = manualFollowUpHook // Fallback for network error display
 
   const activeFollowUp = snapshot?.activeFollowup ?? null
 
@@ -85,14 +83,30 @@ export function PatientProfilePage() {
 
   const handleManualFollowUpSubmit = async (input: UpsertFollowUpInput) => {
     if (!snapshot || !snapshot.patient) return
-    await submitManualFollowUp(snapshot.patient, input)
+    await manualFollowUpHook.submit(snapshot.patient, input)
   }
 
+  // Reload patient profile when any transaction succeeds (redundant due to auto-polling, but safe)
   useEffect(() => {
-    if (success) {
+    if (
+      manualFollowUpHook.success ||
+      rescheduleHook.success ||
+      completeFollowUpHook.success ||
+      createPrescriptionHook.success ||
+      updatePrescriptionHook.success ||
+      discontinuePrescriptionHook.success
+    ) {
       reload()
     }
-  }, [success, reload])
+  }, [
+    manualFollowUpHook.success,
+    rescheduleHook.success,
+    completeFollowUpHook.success,
+    createPrescriptionHook.success,
+    updatePrescriptionHook.success,
+    discontinuePrescriptionHook.success,
+    reload,
+  ])
 
   if (loading) {
     return <PatientProfileSkeleton activeTab={tab} />
@@ -204,7 +218,9 @@ export function PatientProfilePage() {
         onOpenChange={(open) => !open && setAddMedicineConditionId(null)}
         conditionId={addMedicineConditionId}
         conditionName={addMedicineConditionName}
-        onSubmit={addMedicine}
+        onSubmit={(input) => {
+          if (snapshot?.patient) createPrescriptionHook.submit(snapshot.patient.id, input)
+        }}
       />
 
       <EditMedicineModal
@@ -212,8 +228,8 @@ export function PatientProfilePage() {
         onOpenChange={(open) => !open && setEditMedicine(null)}
         medicine={editMedicine}
         onSubmit={(input) => {
-          if (editMedicine) {
-            updateMedicine(editMedicine.conditionId, editMedicine.id, input)
+          if (editMedicine && snapshot?.patient) {
+            updatePrescriptionHook.submit(snapshot.patient.id, editMedicine.conditionId, editMedicine.id, input)
           }
         }}
       />
@@ -223,8 +239,8 @@ export function PatientProfilePage() {
         onOpenChange={(open) => !open && setDiscontinueRow(null)}
         medicine={discontinueRow}
         onConfirm={(reason) => {
-          if (discontinueRow) {
-            discontinueMedicineAction(discontinueRow.conditionId, discontinueRow.id, reason)
+          if (discontinueRow && snapshot?.patient) {
+            discontinuePrescriptionHook.submit(snapshot.patient.id, discontinueRow.conditionId, discontinueRow.id, reason)
           }
         }}
       />
@@ -235,54 +251,24 @@ export function PatientProfilePage() {
         mode={followUpModalMode}
         activeFollowUp={activeFollowUp}
         onSubmit={handleManualFollowUpSubmit}
-        disabled={isRunning}
+        disabled={manualFollowUpHook.isRunning}
       />
 
-      <WorkflowModal
-        open={isRunning}
-        steps={[...MANUAL_FOLLOW_UP_WORKFLOW_STEPS]}
-        title="Scheduling Follow-Up"
-      />
-
-      <ManualFollowUpSuccessModal
-        open={!!success}
-        onOpenChange={(open) => {
-          if (!open) clearStates()
-        }}
-        successData={success}
-        onDone={clearStates}
-      />
-
-      <Dialog open={timeoutNotice} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-md border-none bg-transparent p-0 shadow-none sm:rounded-3xl [&>button]:hidden">
-          <TransactionResultCard
-            className="bg-card p-6 rounded-3xl shadow-xl border border-border mx-0 w-full"
-            variant="timeout"
-            title="Follow-Up Processing Delayed"
-            message="Your follow-up request is still being processed. Please refresh patient profile after a few moments."
-            primaryAction={{ label: 'Close', onClick: clearStates }}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!error && !error.isTimeout && error.title !== 'Validation Error' && error.title !== 'Connection Error'} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-md border-none bg-transparent p-0 shadow-none sm:rounded-3xl [&>button]:hidden">
-          <TransactionResultCard
-            className="bg-card p-6 rounded-3xl shadow-xl border border-border mx-0 w-full"
-            variant="error"
-            title={error?.title === 'Workflow Error' ? 'Unable to schedule follow-up.' : 'Something went wrong.'}
-            message="Please try again."
-            primaryAction={{ label: 'Close', onClick: clearStates }}
-          />
-        </DialogContent>
-      </Dialog>
+      <TransactionModals transaction={manualFollowUpHook} steps={[...MANUAL_FOLLOW_UP_WORKFLOW_STEPS]} loadingTitle="Scheduling Follow-Up" />
+      <TransactionModals transaction={rescheduleHook} steps={[...RESCHEDULE_FOLLOW_UP_WORKFLOW_STEPS]} loadingTitle="Rescheduling Follow-Up" />
+      <TransactionModals transaction={completeFollowUpHook} steps={[...COMPLETE_FOLLOW_UP_WORKFLOW_STEPS]} loadingTitle="Completing Follow-Up" />
+      <TransactionModals transaction={createPrescriptionHook} steps={[...CREATE_PRESCRIPTION_WORKFLOW_STEPS]} loadingTitle="Creating Prescription" />
+      <TransactionModals transaction={updatePrescriptionHook} steps={[...UPDATE_PRESCRIPTION_WORKFLOW_STEPS]} loadingTitle="Updating Prescription" />
+      <TransactionModals transaction={discontinuePrescriptionHook} steps={[...DISCONTINUE_PRESCRIPTION_WORKFLOW_STEPS]} loadingTitle="Discontinuing Prescription" />
 
       <CompleteFollowUpModal
         open={!!completeFollowUpTarget}
         onOpenChange={(open) => !open && setCompleteFollowUpTarget(null)}
         followUp={completeFollowUpTarget}
-        onConfirm={() => {
-          if (completeFollowUpTarget) completeFollowUp(completeFollowUpTarget.id)
+        onConfirm={(notes) => {
+          if (completeFollowUpTarget && snapshot?.patient) {
+            completeFollowUpHook.submit(snapshot.patient.id, snapshot.patient.name, completeFollowUpTarget.id, notes)
+          }
         }}
       />
 
@@ -291,7 +277,9 @@ export function PatientProfilePage() {
         onOpenChange={(open) => !open && setRescheduleTarget(null)}
         followUp={rescheduleTarget}
         onSubmit={(input) => {
-          if (rescheduleTarget) rescheduleFollowUp(rescheduleTarget.id, input)
+          if (rescheduleTarget && snapshot?.patient) {
+            rescheduleHook.submit(snapshot.patient.id, snapshot.patient.name, input)
+          }
         }}
       />
     </div>

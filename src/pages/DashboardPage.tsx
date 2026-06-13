@@ -12,8 +12,17 @@ import { RecentRegistrations } from '@/components/dashboard/RecentRegistrations'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { TodayFollowups } from '@/components/dashboard/TodayFollowups'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useDashboard } from '@/hooks/useDashboard'
+import { CompleteFollowUpModal } from '@/components/patient-profile/modals/CompleteFollowUpModal'
+import { RescheduleFollowUpModal } from '@/components/patient-profile/modals/RescheduleFollowUpModal'
+import { TransactionModals } from '@/components/workflow/TransactionModals'
+import { useCompleteFollowUp, COMPLETE_FOLLOW_UP_WORKFLOW_STEPS } from '@/hooks/useCompleteFollowUp'
+import { useRescheduleFollowUp, RESCHEDULE_FOLLOW_UP_WORKFLOW_STEPS } from '@/hooks/useRescheduleFollowUp'
+import type { TodayFollowupItem } from '@/api/types'
+import type { PatientFollowUpRecord } from '@/data/patientProfileTypes'
+import type { FollowUpStatus } from '@/data/types'
 
 const quickActions = [
   {
@@ -41,6 +50,27 @@ const quickActions = [
 
 export function DashboardPage() {
   const { data, isLoading, isError, refetch, isFetching } = useDashboard()
+
+  const [completeTarget, setCompleteTarget] = useState<TodayFollowupItem | null>(null)
+  const [rescheduleTarget, setRescheduleTarget] = useState<TodayFollowupItem | null>(null)
+
+  const completeHook = useCompleteFollowUp()
+  const rescheduleHook = useRescheduleFollowUp()
+
+  useEffect(() => {
+    if (completeHook.success || rescheduleHook.success) {
+      refetch()
+    }
+  }, [completeHook.success, rescheduleHook.success, refetch])
+
+  const mapToRecord = (item: TodayFollowupItem): PatientFollowUpRecord => ({
+    id: item.followupId ?? '',
+    patientId: item.patientId ?? '',
+    date: item.date,
+    timeSlot: item.time.toLowerCase().includes('afternoon') ? 'Afternoon' : item.time.toLowerCase().includes('night') ? 'Night' : 'Morning',
+    status: item.status as FollowUpStatus,
+    source: 'Manual',
+  })
 
   return (
     <div>
@@ -99,7 +129,11 @@ export function DashboardPage() {
                 <div className="lg:col-span-2 space-y-6">
                   <RecentRegistrations registrations={data.recentRegistrations} />
                   <ConsultationPending patients={data.consultationPending} />
-                  <TodayFollowups followups={data.todayFollowups} />
+                  <TodayFollowups 
+                    followups={data.todayFollowups} 
+                    onComplete={setCompleteTarget}
+                    onReschedule={setRescheduleTarget}
+                  />
                 </div>
 
                 <Card className="h-fit">
@@ -113,6 +147,31 @@ export function DashboardPage() {
               </div>
             </motion.div>
           ) : null}
+
+          <TransactionModals transaction={completeHook} steps={[...COMPLETE_FOLLOW_UP_WORKFLOW_STEPS]} loadingTitle="Completing Follow-Up" />
+          <TransactionModals transaction={rescheduleHook} steps={[...RESCHEDULE_FOLLOW_UP_WORKFLOW_STEPS]} loadingTitle="Rescheduling Follow-Up" />
+
+          <CompleteFollowUpModal
+            open={!!completeTarget}
+            onOpenChange={(open) => !open && setCompleteTarget(null)}
+            followUp={completeTarget ? mapToRecord(completeTarget) : null}
+            onConfirm={(notes) => {
+              if (completeTarget) {
+                completeHook.submit(completeTarget.patientId ?? 'UNKNOWN', completeTarget.patientName, completeTarget.followupId ?? '', notes)
+              }
+            }}
+          />
+
+          <RescheduleFollowUpModal
+            open={!!rescheduleTarget}
+            onOpenChange={(open) => !open && setRescheduleTarget(null)}
+            followUp={rescheduleTarget ? mapToRecord(rescheduleTarget) : null}
+            onSubmit={(input) => {
+              if (rescheduleTarget) {
+                rescheduleHook.submit(rescheduleTarget.patientId ?? 'UNKNOWN', rescheduleTarget.patientName, input)
+              }
+            }}
+          />
         </>
       )}
     </div>
