@@ -48,6 +48,11 @@ export function RescheduleFollowUpModal({
     }
   }, [followUp])
 
+  // Clear error when modal closes/opens
+  useEffect(() => {
+    if (!open) setErrorMsg('')
+  }, [open])
+
   if (!followUp) return null
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -64,11 +69,6 @@ export function RescheduleFollowUpModal({
     onSubmit({ date, timeSlot, reason })
     onOpenChange(false)
   }
-
-  // Clear error when modal closes/opens
-  useEffect(() => {
-    if (!open) setErrorMsg('')
-  }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
