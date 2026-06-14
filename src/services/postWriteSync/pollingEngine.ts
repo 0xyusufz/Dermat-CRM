@@ -29,7 +29,12 @@ export function startPollingEngine(queryClient: QueryClient, session: SyncSessio
         session.patientId,
         session.baselinePatientVersion
       )
-      if (fresh) patientResolved = true
+      if (fresh) {
+        console.log(`[TRACE ISSUE 1] checkPatientFreshness resolved to TRUE`)
+        patientResolved = true
+      } else {
+        console.log(`[TRACE ISSUE 1] checkPatientFreshness resolved to FALSE`)
+      }
     }
 
     if (dashboardResolved && patientResolved) {

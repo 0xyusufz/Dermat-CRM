@@ -42,6 +42,8 @@ export async function checkPatientFreshness(
       ? (raw.snapshotGeneratedAt && raw.snapshotGeneratedAt > baselineSnapshotGeneratedAt)
       : !!raw.snapshotGeneratedAt
 
+    console.log(`[TRACE ISSUE 1] checkPatientFreshness - baseline: ${baselineSnapshotGeneratedAt}, fetched: ${raw.snapshotGeneratedAt}, isNewer: ${isNewer}`)
+
     if (isNewer) {
       // Map through the same transform used by usePatientProfile so
       // the cache holds a PatientProfileSnapshot, not raw PatientApiResponse

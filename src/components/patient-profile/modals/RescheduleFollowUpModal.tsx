@@ -33,6 +33,12 @@ export function RescheduleFollowUpModal({
   const [date, setDate] = useState('')
   const [timeSlot, setTimeSlot] = useState<FollowUpTimeSlot>('Morning')
   const [reason, setReason] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+
+  // Calculate tomorrow's date for the min attribute
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStr = tomorrow.toISOString().split('T')[0]
 
   useEffect(() => {
     if (followUp) {
@@ -46,9 +52,23 @@ export function RescheduleFollowUpModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Server-side validation check client-side
+    const today = new Date().toISOString().split('T')[0]
+    if (date <= today) {
+      setErrorMsg('Please select a future date.')
+      return
+    }
+
+    setErrorMsg('')
     onSubmit({ date, timeSlot, reason })
     onOpenChange(false)
   }
+
+  // Clear error when modal closes/opens
+  useEffect(() => {
+    if (!open) setErrorMsg('')
+  }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,7 +79,18 @@ export function RescheduleFollowUpModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>New Date</Label>
-            <Input type="date" className="mt-1.5" value={date} onChange={(e) => setDate(e.target.value)} required />
+            <Input 
+              type="date" 
+              className="mt-1.5" 
+              value={date} 
+              onChange={(e) => {
+                setDate(e.target.value)
+                setErrorMsg('')
+              }} 
+              min={tomorrowStr}
+              required 
+            />
+            {errorMsg && <p className="text-sm text-danger mt-1">{errorMsg}</p>}
           </div>
           <FollowUpTimeChipSelect value={timeSlot} onChange={setTimeSlot} />
           <div>

@@ -39,7 +39,7 @@ export function applyOptimisticOverride(
       if (patientId) updateFollowUpCache(queryClient, patientId, response, actionType)
       break
     case 'COMPLETE_FOLLOW_UP':
-      if (patientId) updateCompleteFollowUpCache(queryClient, patientId)
+      if (patientId) updateCompleteFollowUpCache(queryClient, patientId, response)
       break
     case 'CREATE_PRESCRIPTION':
       if (patientId) updateMedicineCache(queryClient, patientId, response, 'CREATE_PRESCRIPTION')
@@ -165,6 +165,7 @@ function updateConsultationCache(
   patientId: string,
   response: unknown
 ) {
+  console.log(`[TRACE ISSUE 1] updateConsultationCache running for patientId: ${patientId}`)
   const res = response as {
     condition?: { id: string }
     followup?: { date: string; time: string }
@@ -177,7 +178,11 @@ function updateConsultationCache(
   queryClient.setQueryData(
     ['patient', patientId],
     (oldData: PatientProfileSnapshot | undefined) => {
-      if (!oldData) return oldData
+      if (!oldData) {
+        console.log(`[TRACE ISSUE 1] updateConsultationCache aborting - oldData is undefined`)
+        return oldData
+      }
+      console.log(`[TRACE ISSUE 1] updateConsultationCache proceeding - oldData exists`)
       const newData: PatientProfileSnapshot = { ...oldData, optimisticCreatedAt: Date.now() }
 
       let conditionName = 'New Condition'
@@ -307,9 +312,24 @@ function updateFollowUpCache(
       return newData
     }
   )
+
+  // BUG 5 FIX: Optimistically remove from dashboard today's followups
+  if (actionType === 'RESCHEDULE_FOLLOW_UP') {
+    queryClient.setQueryData(['dashboard'], (oldDash: DashboardData | undefined) => {
+      if (!oldDash) return oldDash
+      const newDash = { ...oldDash, optimisticCreatedAt: Date.now() }
+      if (newDash.todayFollowups) {
+        newDash.todayFollowups = newDash.todayFollowups.filter(f => f.patientId !== patientId)
+      }
+      if (newDash.cards && newDash.cards.activeFollowups > 0) {
+        newDash.cards = { ...newDash.cards, activeFollowups: newDash.cards.activeFollowups - 1 }
+      }
+      return newDash
+    })
+  }
 }
 
-function updateCompleteFollowUpCache(queryClient: QueryClient, patientId: string) {
+function updateCompleteFollowUpCache(queryClient: QueryClient, patientId: string, response?: unknown) {
   queryClient.setQueryData(
     ['patient', patientId],
     (oldData: PatientProfileSnapshot | undefined) => {
@@ -344,6 +364,25 @@ function updateCompleteFollowUpCache(queryClient: QueryClient, patientId: string
       return newData
     }
   )
+
+  // BUG 4 FIX: Optimistically remove from dashboard today's followups
+  const res = response as { followUpId?: string } | undefined
+  queryClient.setQueryData(['dashboard'], (oldDash: DashboardData | undefined) => {
+    if (!oldDash) return oldDash
+    const newDash = { ...oldDash, optimisticCreatedAt: Date.now() }
+    
+    if (newDash.todayFollowups) {
+      newDash.todayFollowups = newDash.todayFollowups.filter(f => 
+        res?.followUpId ? f.followupId !== res.followUpId : f.patientId !== patientId
+      )
+    }
+    
+    if (newDash.cards && newDash.cards.activeFollowups > 0) {
+      newDash.cards = { ...newDash.cards, activeFollowups: newDash.cards.activeFollowups - 1 }
+    }
+    
+    return newDash
+  })
 }
 
 function updateMedicineCache(
@@ -366,6 +405,7 @@ function updateMedicineCache(
         input?: AddMedicineInput | UpdateMedicineInput; 
         reason?: DiscontinueReason;
         medicineId?: string;
+        conditionId?: string;
       }
 
       if (actionType === 'UPDATE_PRESCRIPTION') {
@@ -378,6 +418,56 @@ function updateMedicineCache(
         desc = res.reason ? `Reason: ${res.reason}` : 'Prescription stopped'
       } else if (actionType === 'CREATE_PRESCRIPTION' && res.input && 'medicineName' in res.input) {
         desc = `Prescribed ${res.input.medicineName}`
+      }
+
+      // BUG 2 & 3 FIX: Modifying the medicine record directly
+      if (res.conditionId && res.medicineId && (actionType === 'UPDATE_PRESCRIPTION' || actionType === 'DISCONTINUE_PRESCRIPTION')) {
+        newData.conditions = newData.conditions.map(cond => {
+          if (cond.id !== res.conditionId) return cond;
+          return {
+            ...cond,
+            medicines: cond.medicines.map(med => {
+              if (med.id !== res.medicineId) return med;
+
+              if (actionType === 'DISCONTINUE_PRESCRIPTION') {
+                return {
+                  ...med,
+                  status: 'Discontinued',
+                  discontinuedReason: res.reason
+                };
+              } else if (actionType === 'UPDATE_PRESCRIPTION' && res.input) {
+                const input = res.input as UpdateMedicineInput;
+                let newDuration = med.durationDays;
+                let newStartDate = med.startDate;
+                
+                if (input.updateMode === 'Extend' && input.extendDays) {
+                  newDuration += input.extendDays;
+                } else if (input.updateMode === 'Replace_Current' && input.replaceDurationDays) {
+                  newDuration = input.replaceDurationDays;
+                  newStartDate = new Date().toISOString().split('T')[0];
+                }
+
+                return {
+                  ...med,
+                  dosage: input.dosage || med.dosage,
+                  timing: input.timing && input.timing.length > 0 ? input.timing : med.timing,
+                  frequency: input.frequency || med.frequency,
+                  instructions: input.instructions || med.instructions,
+                  durationDays: newDuration,
+                  startDate: newStartDate
+                };
+              }
+              return med;
+            })
+          };
+        });
+
+        if (actionType === 'DISCONTINUE_PRESCRIPTION') {
+          newData.overview = {
+            ...newData.overview,
+            activeMedicinesCount: Math.max(0, newData.overview.activeMedicinesCount - 1)
+          };
+        }
       }
 
       newData.timeline = [

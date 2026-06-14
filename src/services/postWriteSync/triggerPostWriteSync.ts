@@ -9,6 +9,8 @@ import type { PatientProfileSnapshot } from '@/data/patientProfileTypes'
 export function triggerPostWriteSync<TResponse>(options: SyncSessionOptions<TResponse>): () => void {
   const { queryClient, actionType, patientId, response } = options
   
+  console.log(`[TRACE ISSUE 1] triggerPostWriteSync called for ${actionType} with patientId ${patientId}`)
+
   // Baseline resolution directly from current cache state
   let baselineDashboardVersion: string | undefined
   let baselinePatientVersion: string | undefined
@@ -23,6 +25,7 @@ export function triggerPostWriteSync<TResponse>(options: SyncSessionOptions<TRes
   if (targets.includes('patient') && patientId) {
     const patient = queryClient.getQueryData<PatientProfileSnapshot>(['patient', patientId])
     baselinePatientVersion = patient?.snapshotGeneratedAt
+    console.log(`[TRACE ISSUE 1] baselinePatientVersion captured as: ${baselinePatientVersion}`)
   }
 
   const session: SyncSession = {
