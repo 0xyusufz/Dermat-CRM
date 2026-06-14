@@ -190,6 +190,7 @@ export function useConsultation({ initialPatientId }: UseConsultationProps = {})
             skinProblem: skinProblem.trim(),
             infectionType,
             diagnosisDate,
+            medicines: activeMedicines,
           },
         })
 

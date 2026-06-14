@@ -5,10 +5,12 @@ import type {
   PatientFollowUpRecord,
   PatientCondition,
   PatientTimelineEvent,
+  ConditionMedicine,
   AddMedicineInput,
   UpdateMedicineInput,
   DiscontinueReason,
 } from '@/data/patientProfileTypes'
+import type { ConsultationMedicineDraft } from '@/components/consultation/types'
 import type { Patient } from '@/data/types'
 import type { SyncActionType } from './types'
 
@@ -172,7 +174,8 @@ function updateConsultationCache(
     skinProblem?: string
     infectionType?: string
     diagnosisDate?: string
-    Medicine?: { count: number }
+    Medicine?: { count: number; ids: string }
+    medicines?: ConsultationMedicineDraft[]
   }
 
   queryClient.setQueryData(
@@ -187,6 +190,20 @@ function updateConsultationCache(
 
       let conditionName = 'New Condition'
 
+      // Map consultation medicine drafts into the ConditionMedicine UI model
+      const conditionMedicines: ConditionMedicine[] = (res.medicines ?? []).map((draft, idx) => ({
+        id: `temp-med-${Date.now()}-${idx}`,
+        conditionId: res.condition?.id ?? '',
+        medicineName: draft.medicineName,
+        dosage: draft.dosage,
+        timing: draft.timing,
+        frequency: draft.frequency,
+        startDate: draft.startDate,
+        durationDays: draft.durationDays,
+        instructions: draft.instructions,
+        status: 'Active' as const,
+      }))
+
       if (res?.condition?.id) {
         conditionName = res.skinProblem ?? 'New Condition'
         const newCondition: PatientCondition = {
@@ -196,13 +213,14 @@ function updateConsultationCache(
           infectionType: res.infectionType ?? 'Unknown',
           diagnosisDate: res.diagnosisDate ?? new Date().toISOString().split('T')[0],
           status: 'Active',
-          medicines: [],
+          medicines: conditionMedicines,
         }
         newData.conditions = [newCondition, ...newData.conditions]
 
         newData.overview = {
           ...newData.overview,
           activeConditionsCount: newData.overview.activeConditionsCount + 1,
+          activeMedicinesCount: newData.overview.activeMedicinesCount + conditionMedicines.length,
           treatmentJourney: newData.overview.treatmentJourney.map((step) =>
             step.key === 'consultation' ? { ...step, completed: true } : step
           ),
@@ -321,8 +339,8 @@ function updateFollowUpCache(
       if (newDash.todayFollowups) {
         newDash.todayFollowups = newDash.todayFollowups.filter(f => f.patientId !== patientId)
       }
-      if (newDash.cards && newDash.cards.activeFollowups > 0) {
-        newDash.cards = { ...newDash.cards, activeFollowups: newDash.cards.activeFollowups - 1 }
+      if (newDash.cards && newDash.cards.todayFollowups > 0) {
+        newDash.cards = { ...newDash.cards, todayFollowups: newDash.cards.todayFollowups - 1 }
       }
       return newDash
     })
@@ -377,8 +395,8 @@ function updateCompleteFollowUpCache(queryClient: QueryClient, patientId: string
       )
     }
     
-    if (newDash.cards && newDash.cards.activeFollowups > 0) {
-      newDash.cards = { ...newDash.cards, activeFollowups: newDash.cards.activeFollowups - 1 }
+    if (newDash.cards && newDash.cards.todayFollowups > 0) {
+      newDash.cards = { ...newDash.cards, todayFollowups: newDash.cards.todayFollowups - 1 }
     }
     
     return newDash
@@ -418,6 +436,36 @@ function updateMedicineCache(
         desc = res.reason ? `Reason: ${res.reason}` : 'Prescription stopped'
       } else if (actionType === 'CREATE_PRESCRIPTION' && res.input && 'medicineName' in res.input) {
         desc = `Prescribed ${res.input.medicineName}`
+      }
+
+      // Issue B FIX: Optimistically inject new medicine into condition
+      if (actionType === 'CREATE_PRESCRIPTION' && res.input && 'medicineName' in res.input) {
+        const input = res.input as AddMedicineInput;
+        const newMedicine: ConditionMedicine = {
+          id: `temp-med-${Date.now()}`,
+          conditionId: input.conditionId,
+          medicineName: input.medicineName,
+          dosage: input.dosage,
+          timing: input.timing,
+          frequency: input.frequency,
+          startDate: input.startDate,
+          durationDays: input.durationDays,
+          instructions: input.instructions,
+          status: 'Active',
+        };
+
+        newData.conditions = newData.conditions.map(cond => {
+          if (cond.id !== input.conditionId) return cond;
+          return {
+            ...cond,
+            medicines: [...cond.medicines, newMedicine],
+          };
+        });
+
+        newData.overview = {
+          ...newData.overview,
+          activeMedicinesCount: newData.overview.activeMedicinesCount + 1,
+        };
       }
 
       // BUG 2 & 3 FIX: Modifying the medicine record directly

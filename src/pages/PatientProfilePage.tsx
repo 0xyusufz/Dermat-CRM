@@ -86,27 +86,7 @@ export function PatientProfilePage() {
     await manualFollowUpHook.submit(snapshot.patient, input)
   }
 
-  // Reload patient profile when any transaction succeeds (redundant due to auto-polling, but safe)
-  useEffect(() => {
-    if (
-      manualFollowUpHook.success ||
-      rescheduleHook.success ||
-      completeFollowUpHook.success ||
-      createPrescriptionHook.success ||
-      updatePrescriptionHook.success ||
-      discontinuePrescriptionHook.success
-    ) {
-      reload()
-    }
-  }, [
-    manualFollowUpHook.success,
-    rescheduleHook.success,
-    completeFollowUpHook.success,
-    createPrescriptionHook.success,
-    updatePrescriptionHook.success,
-    discontinuePrescriptionHook.success,
-    reload,
-  ])
+  // Removed redundant reload effect. The polling engine already syncs data.
 
   if (loading) {
     return <PatientProfileSkeleton activeTab={tab} />

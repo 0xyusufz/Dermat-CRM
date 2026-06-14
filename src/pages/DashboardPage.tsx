@@ -12,7 +12,7 @@ import { RecentRegistrations } from '@/components/dashboard/RecentRegistrations'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { TodayFollowups } from '@/components/dashboard/TodayFollowups'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useDashboard } from '@/hooks/useDashboard'
 import { CompleteFollowUpModal } from '@/components/patient-profile/modals/CompleteFollowUpModal'
@@ -57,11 +57,7 @@ export function DashboardPage() {
   const completeHook = useCompleteFollowUp()
   const rescheduleHook = useRescheduleFollowUp()
 
-  useEffect(() => {
-    if (completeHook.success || rescheduleHook.success) {
-      refetch()
-    }
-  }, [completeHook.success, rescheduleHook.success, refetch])
+  // Removed redundant refetch effect. The polling engine already syncs data.
 
   const mapToRecord = (item: TodayFollowupItem): PatientFollowUpRecord => ({
     id: item.followupId ?? '',

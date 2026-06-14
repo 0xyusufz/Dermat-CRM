@@ -28,31 +28,38 @@ export function useRescheduleFollowUp() {
             'Reschedule Reason': input.reason,
           }),
         buildSuccess: (data) => {
-          triggerPostWriteSync({
-            queryClient,
-            actionType: 'RESCHEDULE_FOLLOW_UP',
-            patientId: data.patient.code,
-            response: {
-              followup: {
-                date: input.date,
-                time: input.timeSlot,
+          try {
+            console.log('[TRACE D/E] buildSuccess called. data:', JSON.stringify(data))
+            triggerPostWriteSync({
+              queryClient,
+              actionType: 'RESCHEDULE_FOLLOW_UP',
+              patientId: data.patient.code,
+              response: {
+                followup: {
+                  date: input.date,
+                  time: input.timeSlot,
+                },
               },
-            },
-          })
+            })
 
-          const formattedDate = new Date(input.date).toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-          })
-          
-          return {
-            title: 'Follow-Up Rescheduled Successfully',
-            lines: [
-              { label: 'Patient', value: data.patient.code },
-              { label: 'Date', value: formattedDate },
-              { label: 'Time', value: input.timeSlot },
-            ],
+            const formattedDate = new Date(input.date).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+            
+            return {
+              title: 'Follow-Up Rescheduled Successfully',
+              lines: [
+                { label: 'Patient', value: data.patient.code },
+                { label: 'Date', value: formattedDate },
+                { label: 'Time', value: input.timeSlot },
+              ],
+            }
+          } catch (err) {
+            console.error('[TRACE D/E] buildSuccess CRASHED:', err)
+            console.error('[TRACE D/E] data was:', data)
+            throw err
           }
         },
         buildLateNotification: (data) => ({
