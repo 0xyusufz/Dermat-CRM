@@ -1,5 +1,6 @@
 import { Pill, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PrescriptionStatusBadge } from '@/components/shared/StatusBadge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,6 +17,7 @@ import { EmptyState } from '@/components/patient-profile/EmptyState'
 import { useDashboard } from '@/hooks/useDashboard'
 import { formatDate } from '@/lib/utils'
 import type { PrescriptionStatus } from '@/data/types'
+import type { ActivePrescriptionRecord } from '@/api/types'
 
 interface PrescriptionsPageProps {
   completed?: boolean
@@ -23,12 +25,15 @@ interface PrescriptionsPageProps {
 
 export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps) {
   const { data, isLoading } = useDashboard()
+  const navigate = useNavigate()
   
   const [search, setSearch] = useState('')
   const [doctorFilter, setDoctorFilter] = useState('All Doctors')
   const [statusFilter, setStatusFilter] = useState('All Statuses')
 
-  const baseDataset = completed ? data?.completedPrescriptions : data?.activePrescriptionsList
+  const baseDataset = completed 
+    ? (data?.completedPrescriptions ?? []) 
+    : ((data?.activePrescriptions as unknown as ActivePrescriptionRecord[]) ?? [])
   const summaryCount = completed 
     ? data?.completedPrescriptionSummary?.totalCompletedPrescriptions 
     : data?.totalActivePrescriptionSummary?.totalActivePrescriptions
@@ -180,7 +185,18 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">{displayValue(rx.patientName)}</td>
+                      <td className="px-6 py-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!rx.patientId) return
+                            navigate(`/patients/${rx.patientId}`)
+                          }}
+                          className="text-left hover:underline"
+                        >
+                          {displayValue(rx.patientName)}
+                        </button>
+                      </td>
                       <td className="px-6 py-4 hidden md:table-cell text-muted-foreground">
                         {displayValue(rx.doctor)}
                       </td>
