@@ -64,13 +64,23 @@ export function TodayFollowups({ followups, onComplete, onReschedule }: TodayFol
                     <FollowupStatusBadge status={fu.status} />
                   </td>
                   <td className="py-3">
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => onComplete?.(fu)}>
-                        Complete
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => onReschedule?.(fu)}>
-                        Reschedule
-                      </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <button 
+                        type="button"
+                        className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm"
+                        onClick={() => onComplete?.(fu)}
+                        disabled={fu.status === 'Completed'}
+                      >
+                        ✓ Complete
+                      </button>
+                      <button 
+                        type="button"
+                        className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
+                        onClick={() => onReschedule?.(fu)}
+                        disabled={fu.status === 'Completed'}
+                      >
+                        ↻ Reschedule
+                      </button>
                     </div>
                   </td>
                 </tr>

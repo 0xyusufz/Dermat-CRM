@@ -46,9 +46,10 @@ interface KpiCardProps {
   icon: ReactNode
   iconBg: string
   delay?: number
+  onClick?: () => void
 }
 
-export function KpiCard({ label, value, trend, sparkline, icon, iconBg, delay = 0 }: KpiCardProps) {
+export function KpiCard({ label, value, trend, sparkline, icon, iconBg, delay = 0, onClick }: KpiCardProps) {
   const isPositive = trend >= 0
 
   return (
@@ -57,7 +58,19 @@ export function KpiCard({ label, value, trend, sparkline, icon, iconBg, delay = 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="rounded-2xl border border-border bg-card p-5 card-shadow transition-shadow hover:shadow-lg"
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+      className={cn(
+        'rounded-2xl border border-border bg-card p-5 card-shadow transition-shadow hover:shadow-lg',
+        onClick && 'cursor-pointer'
+      )}
     >
       <div className="flex items-start justify-between">
         <div className={cn('flex h-11 w-11 items-center justify-center rounded-xl', iconBg)}>

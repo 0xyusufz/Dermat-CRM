@@ -225,6 +225,7 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                                   type="button" 
                                   className={completeBtnClass}
                                   onClick={() => setCompleteTarget(row)}
+                                  disabled={row.status === 'Completed'}
                                 >
                                   ✓ Complete
                                 </button>
@@ -234,6 +235,7 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                                   type="button" 
                                   className={rescheduleBtnClass}
                                   onClick={() => setRescheduleTarget(row)}
+                                  disabled={row.status === 'Completed'}
                                 >
                                   ↻ Reschedule
                                 </button>
