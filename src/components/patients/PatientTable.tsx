@@ -1,9 +1,9 @@
 import { PatientRow } from '@/components/patients/PatientRow'
 import { Card, CardContent } from '@/components/ui/card'
-import type { PatientListRow } from '@/data/patientsWorkspace'
+import type { PatientRecord } from '@/api/types'
 
 interface PatientTableProps {
-  rows: PatientListRow[]
+  rows: PatientRecord[]
 }
 
 export function PatientTable({ rows }: PatientTableProps) {
@@ -18,7 +18,6 @@ export function PatientTable({ rows }: PatientTableProps) {
                 <th className="px-4 py-3">Patient Name</th>
                 <th className="hidden px-4 py-3 md:table-cell">Phone</th>
                 <th className="hidden px-4 py-3 lg:table-cell">Assigned Doctor</th>
-                <th className="hidden px-4 py-3 xl:table-cell">Conditions</th>
                 <th className="px-4 py-3">Active Medicines</th>
                 <th className="hidden px-4 py-3 sm:table-cell">Next Follow-Up</th>
                 <th className="px-4 py-3">Current Status</th>
@@ -27,7 +26,7 @@ export function PatientTable({ rows }: PatientTableProps) {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <PatientRow key={row.id} row={row} />
+                <PatientRow key={row.patientId} row={row} />
               ))}
             </tbody>
           </table>

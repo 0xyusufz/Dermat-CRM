@@ -1,6 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ClipboardList, UserPlus } from 'lucide-react'
-import { PatientFilters } from '@/components/patients/PatientFilters'
+import { useEffect, useMemo, useState } from 'react'
+import { PatientFilters, type PatientFiltersState, defaultPatientFilters } from '@/components/patients/PatientFilters'
 import { PatientKPICards } from '@/components/patients/PatientKPICards'
 import { PatientSearch } from '@/components/patients/PatientSearch'
 import { PatientTable } from '@/components/patients/PatientTable'
@@ -9,32 +10,137 @@ import { PatientsLoadingSkeleton } from '@/components/patients/PatientsLoadingSk
 import { PatientsMobileList } from '@/components/patients/PatientsMobileList'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { usePatientsWorkspace } from '@/hooks/usePatientsWorkspace'
+import { useDashboard } from '@/hooks/useDashboard'
 
 interface AllPatientsPageProps {
   filterActive?: boolean
 }
 
 export function AllPatientsPage({ filterActive = false }: AllPatientsPageProps) {
-  const navigate = useNavigate()
-  const {
-    filters,
-    setFilters,
-    clearFilters,
-    hasActiveFilters,
-    rows,
-    totalPatients,
-    kpis,
-    suggestions,
-    loading,
-  } = usePatientsWorkspace({ activeOnly: filterActive })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { data, isLoading } = useDashboard()
 
-  if (loading) {
-    return <PatientsLoadingSkeleton />
+  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<PatientFiltersState>(defaultPatientFilters)
+
+  // URL Param Hydration
+  useEffect(() => {
+    const statusParam = searchParams.get('status')
+    const followupParam = searchParams.get('followup')
+    
+    if (statusParam || followupParam) {
+      setFilters(prev => ({
+        ...prev,
+        status: statusParam === 'Registered' ? 'Registered' : prev.status,
+        followup: followupParam === 'scheduled' || followupParam === 'Has Active Follow-Up' 
+          ? 'Has Active Follow-Up' 
+          : prev.followup
+      }))
+    }
+  }, [searchParams])
+
+  const handleSetFilters = (newFilters: PatientFiltersState) => {
+    setFilters(newFilters)
+    
+    const params = new URLSearchParams()
+    if (newFilters.status !== 'All Statuses') {
+      params.set('status', newFilters.status)
+    }
+    if (newFilters.followup !== 'Any Follow-Up') {
+      params.set('followup', newFilters.followup === 'Has Active Follow-Up' ? 'scheduled' : newFilters.followup)
+    }
+    setSearchParams(params)
   }
 
-  const isEmpty = totalPatients === 0
-  const isFilteredEmpty = !isEmpty && rows.length === 0
+  const clearFilters = () => {
+    setSearch('')
+    setFilters(defaultPatientFilters)
+    setSearchParams(new URLSearchParams())
+  }
+
+  const hasActiveFilters = 
+    search !== '' ||
+    filters.doctor !== 'All Doctors' ||
+    filters.status !== 'All Statuses' ||
+    filters.medicine !== 'Any Medicines' ||
+    filters.followup !== 'Any Follow-Up' ||
+    filters.time !== 'All Time'
+
+  const baseDataset = filterActive ? data?.totalActivePatients : data?.totalPatientsAvailable
+  const summary = filterActive ? data?.activePatientSummary : data?.totalPatientSummary
+  const totalPatients = baseDataset?.length || 0
+
+  const filteredRows = useMemo(() => {
+    if (!baseDataset) return []
+
+    let result = baseDataset
+
+    // 1. Search
+    if (search.trim() !== '') {
+      const query = search.trim().toLowerCase()
+      result = result.filter(p => p.searchText.toLowerCase().includes(query))
+    }
+
+    // 2. Doctor
+    if (filters.doctor !== 'All Doctors') {
+      result = result.filter(p => p.assignedDoctor === filters.doctor)
+    }
+
+    // 3. Status
+    if (filters.status !== 'All Statuses') {
+      result = result.filter(p => p.status === filters.status)
+    }
+
+    // 4. Medicine
+    if (filters.medicine !== 'Any Medicines') {
+      if (filters.medicine === 'Has Active Medicines') {
+        result = result.filter(p => p.activeMedicineCount > 0)
+      } else if (filters.medicine === 'No Active Medicines') {
+        result = result.filter(p => p.activeMedicineCount === 0)
+      }
+    }
+
+    // 5. Follow-Up
+    if (filters.followup !== 'Any Follow-Up') {
+      if (filters.followup === 'Has Active Follow-Up') {
+        result = result.filter(p => p.nextFollowupDate !== null && p.nextFollowupDate.trim() !== '')
+      } else if (filters.followup === 'No Active Follow-Up') {
+        result = result.filter(p => p.nextFollowupDate === null || p.nextFollowupDate.trim() === '')
+      }
+    }
+
+    // 6. Time
+    if (filters.time !== 'All Time') {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      result = result.filter(p => {
+        if (!p.registrationDate) return false
+        
+        const regParts = p.registrationDate.split('-')
+        if (regParts.length !== 3) return false
+        
+        // Parse explicitly to avoid UTC/timezone shifting edge cases
+        const regDate = new Date(parseInt(regParts[0], 10), parseInt(regParts[1], 10) - 1, parseInt(regParts[2], 10))
+        regDate.setHours(0, 0, 0, 0)
+        
+        const diffTime = today.getTime() - regDate.getTime()
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+        if (filters.time === 'Last 7 Days') return diffDays >= 0 && diffDays <= 7
+        if (filters.time === 'Last 30 Days') return diffDays >= 0 && diffDays <= 30
+        if (filters.time === 'Last 90 Days') return diffDays >= 0 && diffDays <= 90
+        
+        return true
+      })
+    }
+
+    return result
+  }, [baseDataset, search, filters])
+
+  if (isLoading) {
+    return <PatientsLoadingSkeleton />
+  }
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
@@ -64,35 +170,33 @@ export function AllPatientsPage({ filterActive = false }: AllPatientsPageProps) 
         </div>
       </div>
 
-      <PatientKPICards kpis={kpis} />
+      <PatientKPICards summary={summary} />
 
       <Card className="border-border/80 shadow-sm">
         <CardContent className="space-y-4 p-4 sm:p-5">
           <PatientSearch
-            value={filters.search}
-            onChange={(search) => setFilters({ ...filters, search })}
-            suggestions={suggestions}
-            onSelectSuggestion={(row) => navigate(`/patients/${row.id}`)}
+            value={search}
+            onChange={setSearch}
           />
           <PatientFilters
             filters={filters}
-            onChange={setFilters}
+            onChange={handleSetFilters}
             onClear={clearFilters}
             hasActiveFilters={hasActiveFilters}
           />
           <p className="text-xs text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{rows.length}</span> of{' '}
+            Showing <span className="font-medium text-foreground">{filteredRows.length}</span> of{' '}
             {totalPatients} patients
           </p>
         </CardContent>
       </Card>
 
-      {isEmpty || isFilteredEmpty ? (
-        <PatientsEmptyState filteredEmpty={isFilteredEmpty} />
+      {filteredRows.length === 0 ? (
+        <PatientsEmptyState filteredEmpty={totalPatients > 0} />
       ) : (
         <>
-          <PatientTable rows={rows} />
-          <PatientsMobileList rows={rows} />
+          <PatientTable rows={filteredRows} />
+          <PatientsMobileList rows={filteredRows} />
         </>
       )}
     </div>

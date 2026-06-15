@@ -1,57 +1,49 @@
 import { ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { FollowUpStatusBadge } from '@/components/shared/StatusBadge'
 import { WorkspacePatientStatusBadge } from '@/components/patients/PatientStatusBadge'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import type { PatientListRow } from '@/data/patientsWorkspace'
+import type { PatientRecord } from '@/api/types'
 import { formatDate } from '@/lib/utils'
 
-export function PatientsMobileList({ rows }: { rows: PatientListRow[] }) {
+export function PatientsMobileList({ rows }: { rows: PatientRecord[] }) {
   const navigate = useNavigate()
+
+  const displayValue = (val: string | null | undefined) => {
+    if (!val || val.trim() === '') return '-'
+    return val
+  }
 
   return (
     <div className="space-y-3 md:hidden">
       {rows.map((row) => (
         <Card
-          key={row.id}
+          key={row.patientId}
           className="cursor-pointer border-border/80 shadow-sm transition-shadow active:scale-[0.99]"
-          onClick={() => navigate(`/patients/${row.id}`)}
+          onClick={() => navigate(`/patients/${row.patientId}`)}
         >
           <CardContent className="p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-semibold">{row.name}</p>
-                <p className="font-mono text-xs text-primary">{row.id}</p>
+                <p className="font-semibold">{row.patientName}</p>
+                <p className="font-mono text-xs text-primary">{row.patientId}</p>
               </div>
-              <WorkspacePatientStatusBadge status={row.workspaceStatus} />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1">
-              {row.conditionNames.slice(0, 2).map((c) => (
-                <Badge key={c} variant="secondary" className="text-[10px] font-normal">
-                  {c}
-                </Badge>
-              ))}
-              {row.conditionNames.length > 2 && (
-                <Badge variant="outline" className="text-[10px]">
-                  +{row.conditionNames.length - 2}
-                </Badge>
-              )}
+              <WorkspacePatientStatusBadge status={row.status} />
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-              <span>{row.activeMedicinesCount} active medicines</span>
-              <span>{row.doctorName}</span>
+              <span>
+                {row.activeMedicineCount > 0
+                  ? `${row.activeMedicineCount} ${row.activeMedicineCount === 1 ? 'active medicine' : 'active medicines'}`
+                  : 'No active medicines'}
+              </span>
+              <span>{displayValue(row.assignedDoctor)}</span>
               <span className="col-span-2">
                 Follow-up:{' '}
-                {row.activeFollowUpDate ? (
+                {row.nextFollowupDate ? (
                   <>
-                    {formatDate(row.activeFollowUpDate)} · {row.activeFollowUpTime}{' '}
-                    {row.activeFollowUpStatus && (
-                      <FollowUpStatusBadge status={row.activeFollowUpStatus} className="ml-1" />
-                    )}
+                    {formatDate(row.nextFollowupDate)} {row.nextFollowupTime ? `· ${row.nextFollowupTime}` : ''}
                   </>
                 ) : (
-                  'None'
+                  '-'
                 )}
               </span>
             </div>

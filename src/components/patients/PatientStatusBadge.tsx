@@ -1,29 +1,32 @@
-import type { WorkspacePatientStatus } from '@/data/patientsWorkspace'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-
-const config: Record<
-  WorkspacePatientStatus,
-  { variant: 'default' | 'secondary' | 'success' | 'warning' | 'purple' | 'outline'; label: string }
-> = {
-  Registered: { variant: 'secondary', label: 'Registered' },
-  'Under Treatment': { variant: 'success', label: 'Under Treatment' },
-  'Follow-Up Scheduled': { variant: 'purple', label: 'Follow-Up Scheduled' },
-  Completed: { variant: 'outline', label: 'Completed' },
-  Inactive: { variant: 'default', label: 'Inactive' },
-}
 
 export function WorkspacePatientStatusBadge({
   status,
   className,
 }: {
-  status: WorkspacePatientStatus
+  status: string
   className?: string
 }) {
-  const c = config[status]
+  let variant: 'default' | 'secondary' | 'success' | 'warning' | 'purple' | 'outline' = 'default'
+
+  switch (status) {
+    case 'Registered':
+      variant = 'secondary'
+      break
+    case 'Active':
+      variant = 'success'
+      break
+    case 'Completed':
+      variant = 'outline'
+      break
+    default:
+      variant = 'default'
+  }
+
   return (
-    <Badge variant={c.variant} className={cn('font-medium', className)}>
-      {c.label}
+    <Badge variant={variant} className={cn('font-medium', className)}>
+      {status}
     </Badge>
   )
 }

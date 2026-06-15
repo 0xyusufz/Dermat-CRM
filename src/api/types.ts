@@ -76,6 +76,27 @@ export interface ActivePrescriptionItem {
   status: string
 }
 
+export interface PatientSummary {
+  totalPatients: number
+  activePatients: number
+  patientsWithActiveFollowup: number
+  patientsRequiringAttention: number
+}
+
+export interface PatientRecord {
+  patientId: string
+  patientName: string
+  phone: string | null
+  assignedDoctor: string | null
+  createdTime: string
+  registrationDate: string | null
+  activeMedicineCount: number
+  nextFollowupDate: string | null
+  nextFollowupTime: string | null
+  status: string
+  searchText: string
+}
+
 export interface DashboardData {
   cards: DashboardCards
   recentRegistrations: RecentRegistration[]
@@ -87,4 +108,8 @@ export interface DashboardData {
   meta?: Record<string, unknown>
   generatedAt?: string
   optimisticCreatedAt?: number
+  totalPatientSummary?: PatientSummary
+  totalPatientsAvailable?: PatientRecord[]
+  activePatientSummary?: PatientSummary
+  totalActivePatients?: PatientRecord[]
 }
