@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FollowUpStatusBadge } from '@/components/shared/StatusBadge'
 import { DashboardContentSkeleton } from '@/components/dashboard/DashboardSkeleton'
 import { EmptyState } from '@/components/patient-profile/EmptyState'
 import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { useDashboard } from '@/hooks/useDashboard'
-import { formatDate, formatTime } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import type { FollowUpStatus } from '@/data/types'
 
 type FollowUpFilter = 'today' | 'upcoming' | 'missed' | 'completed'
@@ -16,6 +19,7 @@ interface FollowUpsPageProps {
 
 export function FollowUpsPage({ filter }: FollowUpsPageProps) {
   const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
   const { data, isLoading } = useDashboard()
 
   if (isLoading) {
@@ -69,6 +73,15 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
       break
   }
 
+  // Apply search filtering (except for today)
+  if (filter !== 'today' && searchQuery.trim() !== '') {
+    const query = searchQuery.trim().toLowerCase()
+    rows = rows.filter((row) => {
+      const text = row.searchText?.toLowerCase() || ''
+      return text.includes(query)
+    })
+  }
+
   const displayValue = (val: string | null | undefined) => {
     if (!val || val.trim() === '') return '-'
     return val
@@ -89,6 +102,22 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
         title={title} 
         description={`${count} follow-ups · ${description}`} 
       />
+
+      {filter !== 'today' && (
+        <Card className="mb-6">
+          <CardContent className="p-4 flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search follow-up ID, patient, doctor, or phone..."
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {rows.length === 0 ? (
         <div className="py-12">
@@ -129,10 +158,13 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                               if (!row.patientId) return
                               navigate(`/patients/${row.patientId}`)
                             }}
-                            className="text-left font-medium hover:underline focus:outline-none"
+                            className="text-left font-medium hover:underline focus:outline-none block"
                           >
                             {displayValue(row.patientName)}
                           </button>
+                          <div className="text-xs text-muted-foreground leading-tight">
+                            {displayValue(row.patientId)}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-muted-foreground">
                           {displayValue(row.doctor)}
