@@ -36,7 +36,7 @@ export function PatientKPICards({ summary }: PatientKPICardsProps) {
       icon: CalendarCheck,
       iconClass: 'text-indigo-700 dark:text-indigo-400',
       bg: 'bg-indigo-50 dark:bg-indigo-950',
-      onClick: () => navigate('/patients/active?followup=Has+Active+Follow-Up'),
+      onClick: () => navigate('/patients/active?followup=scheduled'),
     },
     {
       label: 'Patients Requiring Attention',
