@@ -1,4 +1,4 @@
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { ClipboardList, UserPlus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { PatientFilters, type PatientFiltersState, defaultPatientFilters } from '@/components/patients/PatientFilters'
@@ -23,33 +23,28 @@ export function AllPatientsPage({ filterActive = false }: AllPatientsPageProps) 
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<PatientFiltersState>(defaultPatientFilters)
 
+  const location = useLocation()
+
   // URL Param Hydration
   useEffect(() => {
     const statusParam = searchParams.get('status')
     const followupParam = searchParams.get('followup')
     
-    if (statusParam || followupParam) {
-      setFilters(prev => ({
-        ...prev,
-        status: statusParam === 'Registered' ? 'Registered' : prev.status,
-        followup: followupParam === 'scheduled' || followupParam === 'Has Active Follow-Up' 
-          ? 'Has Active Follow-Up' 
-          : prev.followup
-      }))
-    }
-  }, [searchParams])
+    // Completely reset search and filters on any route/param change
+    setSearch('')
+    setFilters({
+      ...defaultPatientFilters,
+      status: statusParam === 'Registered' ? 'Registered' : defaultPatientFilters.status,
+      followup: followupParam === 'scheduled' || followupParam === 'Has Active Follow-Up' 
+        ? 'Has Active Follow-Up' 
+        : defaultPatientFilters.followup
+    })
+  }, [location.pathname, location.search])
 
   const handleSetFilters = (newFilters: PatientFiltersState) => {
+    // Only update local state. Do not push to URL to prevent reset loop
+    // and keep KPI routing distinct from manual filtering.
     setFilters(newFilters)
-    
-    const params = new URLSearchParams()
-    if (newFilters.status !== 'All Statuses') {
-      params.set('status', newFilters.status)
-    }
-    if (newFilters.followup !== 'Any Follow-Up') {
-      params.set('followup', newFilters.followup === 'Has Active Follow-Up' ? 'scheduled' : newFilters.followup)
-    }
-    setSearchParams(params)
   }
 
   const clearFilters = () => {
