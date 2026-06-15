@@ -45,7 +45,12 @@ export function ConsultationPending({ patients }: ConsultationPendingProps) {
                     </span>
                   </td>
                   <td className="py-3">
-                    <Button size="sm" onClick={() => navigate(`/consultation/${patient.patientId}`)}>
+                    <Button 
+                      variant="gradient" 
+                      size="sm" 
+                      className="shadow-sm"
+                      onClick={() => navigate(`/consultation/${patient.patientId}`)}
+                    >
                       Start Consultation
                     </Button>
                   </td>

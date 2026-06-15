@@ -22,23 +22,23 @@ export function PatientRow({ row }: PatientRowProps) {
       className="group cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/30"
       onClick={() => navigate(`/patients/${row.patientId}`)}
     >
-      <td className="px-4 py-3.5 font-mono text-xs font-medium text-primary">{row.patientId}</td>
+      <td className="px-4 py-3.5 font-mono text-xs font-medium text-primary [[data-sidebar-expanded=true]_&]:text-[11px] [[data-sidebar-expanded=true]_&]:whitespace-nowrap lg:max-w-[120px]">{row.patientId}</td>
       <td className="px-4 py-3.5">
         <p className="font-medium">{row.patientName}</p>
       </td>
-      <td className="hidden px-4 py-3.5 text-muted-foreground md:table-cell">
+      <td className="hidden px-4 py-3.5 text-muted-foreground md:table-cell [[data-sidebar-expanded=true]_&]:text-[13px] [[data-sidebar-expanded=true]_&]:whitespace-nowrap">
         {displayValue(row.phone)}
       </td>
       <td className="hidden px-4 py-3.5 text-muted-foreground lg:table-cell">
         {displayValue(row.assignedDoctor)}
       </td>
-      <td className="px-4 py-3.5">
+      <td className="px-4 py-3.5 [[data-sidebar-expanded=true]_&]:whitespace-nowrap">
         {row.activeMedicineCount > 0 ? (
-          <span className="text-sm font-medium">
+          <span className="text-sm font-medium [[data-sidebar-expanded=true]_&]:text-xs">
             {row.activeMedicineCount} {row.activeMedicineCount === 1 ? 'Active Medicine' : 'Active Medicines'}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">No Active Medicines</span>
+          <span className="text-xs text-muted-foreground [[data-sidebar-expanded=true]_&]:text-[11px]">No Active Medicines</span>
         )}
       </td>
       <td className="hidden px-4 py-3.5 sm:table-cell">
@@ -56,12 +56,12 @@ export function PatientRow({ row }: PatientRowProps) {
       <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
         <Button
           size="sm"
-          variant="ghost"
-          className="gap-1 opacity-80 group-hover:opacity-100"
+          variant="outline"
+          className="gap-1 opacity-80 group-hover:opacity-100 transition-all hover:border-primary hover:bg-primary/5"
           onClick={() => navigate(`/patients/${row.patientId}`)}
         >
-          Open Profile
-          <ChevronRight className="h-3.5 w-3.5" />
+          Profile
+          <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </Button>
       </td>
     </tr>

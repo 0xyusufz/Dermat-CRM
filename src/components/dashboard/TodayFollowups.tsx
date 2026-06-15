@@ -69,7 +69,7 @@ export function TodayFollowups({ followups, onComplete, onReschedule }: TodayFol
                     <FollowupStatusBadge status={fu.status} />
                   </td>
                   <td className="px-4 py-4 align-middle">
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-row flex-nowrap items-center gap-2">
                       <button 
                         type="button"
                         className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm"

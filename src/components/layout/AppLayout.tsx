@@ -19,13 +19,14 @@ export function AppLayout() {
         onMobileClose={() => setMobileOpen(false)}
       />
       <div
+        data-sidebar-expanded={!sidebarCollapsed}
         className={cn(
           'transition-all duration-250 max-lg:ml-0',
           sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[260px]'
         )}
       >
         <TopNavbar onMenuClick={() => setMobileOpen(true)} />
-        <main className="p-4 sm:p-6">
+        <main data-sidebar-expanded={!sidebarCollapsed} className="p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

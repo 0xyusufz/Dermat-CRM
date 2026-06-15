@@ -69,11 +69,12 @@ export function RecentRegistrations({ registrations }: RecentRegistrationsProps)
                   </td>
                   <td className="py-3">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
+                      className="group transition-all hover:border-primary hover:bg-primary/5"
                       onClick={() => navigate(`/patients/${patient.patientId}`)}
                     >
-                      View
+                      Profile <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
                     </Button>
                   </td>
                 </tr>

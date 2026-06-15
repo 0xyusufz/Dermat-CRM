@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Bell, Menu, Moon, Plus, Sun, User } from 'lucide-react'
+import { Menu, Moon, Plus, Sun, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { GlobalPatientSearch } from '@/components/search/GlobalPatientSearch'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -7,12 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useDashboard } from '@/hooks/useDashboard'
-
-const notifications = [
-  { id: 1, title: 'Follow-up reminder', message: '5 follow-ups scheduled for today', time: '2m ago' },
-  { id: 2, title: 'New registration', message: 'Md Yusuf Fatah registered', time: '15m ago' },
-  { id: 3, title: 'Prescription expiring', message: 'RX-3012 expires in 3 days', time: '1h ago' },
-]
 
 export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { isDark, toggleTheme } = useTheme()
@@ -30,7 +24,7 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         isIndexLoading={isLoading}
       />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 [[data-sidebar-expanded=false]_&]:gap-4 [[data-sidebar-expanded=false]_&]:pr-4">
         <Button
           variant="gradient"
           size="sm"
@@ -40,37 +34,6 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <Plus className="h-4 w-4" />
           Quick Action
         </Button>
-
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger" />
-            </Button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              align="end"
-              sideOffset={8}
-              className="z-50 w-80 rounded-2xl border border-border bg-card p-2 shadow-xl"
-            >
-              <div className="px-3 py-2">
-                <p className="text-sm font-semibold">Notifications</p>
-                <p className="text-xs text-muted-foreground">You have 3 unread notifications</p>
-              </div>
-              {notifications.map((n) => (
-                <DropdownMenu.Item
-                  key={n.id}
-                  className="flex cursor-pointer flex-col gap-0.5 rounded-xl px-3 py-2.5 outline-none hover:bg-muted/60"
-                >
-                  <span className="text-sm font-medium">{n.title}</span>
-                  <span className="text-xs text-muted-foreground">{n.message}</span>
-                  <span className="text-[10px] text-muted-foreground">{n.time}</span>
-                </DropdownMenu.Item>
-              ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
 
         <div className="hidden items-center gap-2 rounded-xl border border-border px-3 py-1.5 sm:flex">
           {isDark ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}

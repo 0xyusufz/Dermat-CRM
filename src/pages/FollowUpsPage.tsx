@@ -219,7 +219,7 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                         
                         {(showCompleteButton || showRescheduleButton) && (
                           <td className="px-6 py-4">
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-row flex-nowrap items-center gap-2">
                               {showCompleteButton && (
                                 <button 
                                   type="button" 
