@@ -143,6 +143,51 @@ export interface CompletedPrescriptionRecord {
   searchText: string
 }
 
+export interface FollowupSummary {
+  totalUpcomingFollowups?: number
+  totalMissedFollowups?: number
+  totalCompletedFollowups?: number
+  totalTodayFollowups?: number
+}
+
+export interface UpcomingFollowupRecord {
+  followupId: string
+  patientId: string
+  patientName: string
+  phone: string
+  doctor: string
+  followupDate: string
+  followupTime: string
+  status: string
+  searchText: string
+}
+
+export interface MissedFollowupRecord {
+  followupId: string
+  patientId: string
+  patientName: string
+  phone: string
+  doctor: string
+  followupDate: string
+  followupTime: string
+  daysOverdue: number
+  rescheduleCount: number
+  status: string
+}
+
+export interface CompletedFollowupRecord {
+  followupId: string
+  patientId: string
+  patientName: string
+  phone: string
+  doctor: string
+  followupDate: string
+  followupTime: string
+  daysOverdue?: number
+  rescheduleCount: number
+  status: string
+}
+
 export interface DashboardData {
   cards: DashboardCards
   recentRegistrations: RecentRegistration[]
@@ -164,4 +209,10 @@ export interface DashboardData {
   completedPrescriptionSummary?: PrescriptionSummary
   featuredPrescriptions?: FeaturedPrescriptionCard[]
   completedPrescriptions?: CompletedPrescriptionRecord[]
+  totalUpcomingFollowupSummary?: FollowupSummary
+  upcomingFollowups?: UpcomingFollowupRecord[]
+  totalMissedFollowupSummary?: FollowupSummary
+  missedFollowups?: MissedFollowupRecord[]
+  totalCompletedFollowupSummary?: FollowupSummary
+  completedFollowups?: CompletedFollowupRecord[]
 }
