@@ -1,6 +1,5 @@
 import { Pill, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PrescriptionStatusBadge } from '@/components/shared/StatusBadge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,73 +11,101 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  doctors,
-  getActivePrescriptions,
-  getCompletedPrescriptions,
-  getDoctorById,
-  getPatientById,
-} from '@/data/mockData'
+import { DashboardContentSkeleton } from '@/components/dashboard/DashboardSkeleton'
+import { EmptyState } from '@/components/patient-profile/EmptyState'
+import { useDashboard } from '@/hooks/useDashboard'
 import { formatDate } from '@/lib/utils'
+import type { PrescriptionStatus } from '@/data/types'
 
 interface PrescriptionsPageProps {
   completed?: boolean
 }
 
 export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps) {
-  const navigate = useNavigate()
+  const { data, isLoading } = useDashboard()
+  
   const [search, setSearch] = useState('')
-  const [doctorFilter, setDoctorFilter] = useState('all')
+  const [doctorFilter, setDoctorFilter] = useState('All Doctors')
+  const [statusFilter, setStatusFilter] = useState('All Statuses')
 
-  const prescriptions = completed ? getCompletedPrescriptions() : getActivePrescriptions()
+  const baseDataset = completed ? data?.completedPrescriptions : data?.activePrescriptionsList
+  const summaryCount = completed 
+    ? data?.completedPrescriptionSummary?.totalCompletedPrescriptions 
+    : data?.totalActivePrescriptionSummary?.totalActivePrescriptions
+  
+  const featuredCards = completed ? data?.featuredPrescriptions : data?.allFeaturedPrescriptions
 
-  const filtered = useMemo(() => {
-    let list = [...prescriptions]
-    if (search) {
-      const q = search.toLowerCase()
-      list = list.filter((rx) => {
-        const patient = getPatientById(rx.patientId)
-        return (
-          rx.medicineName.toLowerCase().includes(q) ||
-          patient?.name.toLowerCase().includes(q) ||
-          rx.id.toLowerCase().includes(q)
-        )
-      })
+  const filteredRows = useMemo(() => {
+    if (!baseDataset) return []
+
+    let result = baseDataset
+
+    // 1. Search
+    if (search.trim() !== '') {
+      const query = search.trim().toLowerCase()
+      result = result.filter(rx => rx.searchText.toLowerCase().includes(query))
     }
-    if (doctorFilter !== 'all') {
-      list = list.filter((rx) => rx.doctorId === doctorFilter)
+
+    // 2. Doctor
+    if (doctorFilter !== 'All Doctors') {
+      result = result.filter(rx => rx.doctor === doctorFilter)
     }
-    return list
-  }, [prescriptions, search, doctorFilter])
+
+    // 3. Status (Only on completed page)
+    if (completed && statusFilter !== 'All Statuses') {
+      if (statusFilter === 'Completed') {
+        result = result.filter(rx => rx.status === 'Completed')
+      } else if (statusFilter === 'Discontinued') {
+        result = result.filter(rx => rx.status === 'Stopped')
+      }
+    }
+
+    return result
+  }, [baseDataset, search, doctorFilter, statusFilter, completed])
+
+  if (isLoading) {
+    return <DashboardContentSkeleton />
+  }
+
+  const displayValue = (val: string | null | undefined) => {
+    if (!val || val.trim() === '') return '-'
+    return val
+  }
+
+  const normalizeStatus = (status: string) => {
+    return status === 'Stopped' ? 'Discontinued' : status
+  }
 
   return (
     <div>
       <PageHeader
         title={completed ? 'Completed Prescriptions' : 'Active Prescriptions'}
-        description={`${filtered.length} prescriptions`}
+        description={`${summaryCount ?? 0} prescriptions`}
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {filtered.slice(0, 4).map((rx) => {
-          const patient = getPatientById(rx.patientId)
-          return (
-            <Card key={rx.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950">
-                    <Pill className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <PrescriptionStatusBadge status={rx.status} />
+        {featuredCards?.map((rx) => (
+          <Card key={rx.prescriptionId} className="transition-shadow">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950">
+                  <Pill className="h-5 w-5 text-purple-600" />
                 </div>
-                <p className="mt-3 font-semibold">{rx.medicineName}</p>
-                <p className="text-sm text-muted-foreground">{patient?.name}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {formatDate(rx.startDate)} — {formatDate(rx.endDate)}
+                <PrescriptionStatusBadge status={normalizeStatus(rx.status) as PrescriptionStatus} />
+              </div>
+              <p className="mt-3 font-semibold">{displayValue(rx.medicine)}</p>
+              <p className="text-sm text-muted-foreground">{displayValue(rx.patientName)}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {displayValue(rx.startDate && formatDate(rx.startDate))} — {displayValue(rx.endDate && formatDate(rx.endDate))}
+              </p>
+              {!completed && rx.daysRemaining !== undefined && (
+                <p className="mt-2 text-sm font-medium text-purple-600 dark:text-purple-400">
+                  {rx.daysRemaining} Days Remaining
                 </p>
-              </CardContent>
-            </Card>
-          )
-        })}
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card className="mb-6">
@@ -88,7 +115,7 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search medicine or patient..."
+              placeholder="Search prescription ID, patient, medicine, doctor, or phone..."
               className="pl-10"
             />
           </div>
@@ -97,54 +124,77 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
               <SelectValue placeholder="Doctor" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Doctors</SelectItem>
-              {doctors.map((d) => (
-                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-              ))}
+              <SelectItem value="All Doctors">All Doctors</SelectItem>
+              <SelectItem value="Rizwana Barkat">Rizwana Barkat</SelectItem>
+              <SelectItem value="Muzammil Barkat">Muzammil Barkat</SelectItem>
             </SelectContent>
           </Select>
+          
+          {completed && (
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Statuses">All Statuses</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Discontinued">Discontinued</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30 text-left text-muted-foreground">
-                  <th className="px-6 py-4 font-medium">Medicine Name</th>
-                  <th className="px-6 py-4 font-medium">Patient</th>
-                  <th className="px-6 py-4 font-medium hidden md:table-cell">Doctor</th>
-                  <th className="px-6 py-4 font-medium">Start Date</th>
-                  <th className="px-6 py-4 font-medium">End Date</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((rx) => {
-                  const patient = getPatientById(rx.patientId)
-                  return (
+      {filteredRows.length === 0 ? (
+        <div className="py-12">
+          <EmptyState 
+            title={completed ? 'No Completed Prescriptions Found' : 'No Active Prescriptions Found'}
+          />
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30 text-left text-muted-foreground">
+                    <th className="px-6 py-4 font-medium">Medicine Name</th>
+                    <th className="px-6 py-4 font-medium">Patient</th>
+                    <th className="px-6 py-4 font-medium hidden md:table-cell">Doctor</th>
+                    <th className="px-6 py-4 font-medium">Start Date</th>
+                    <th className="px-6 py-4 font-medium">End Date</th>
+                    <th className="px-6 py-4 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRows.map((rx) => (
                     <tr
-                      key={rx.id}
-                      className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors cursor-pointer"
-                      onClick={() => patient && navigate(`/patients/${patient.id}`)}
+                      key={rx.prescriptionId}
+                      className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
                     >
-                      <td className="px-6 py-4 font-medium">{rx.medicineName}</td>
-                      <td className="px-6 py-4">{patient?.name}</td>
-                      <td className="px-6 py-4 hidden md:table-cell text-muted-foreground">
-                        {getDoctorById(rx.doctorId)?.name}
+                      <td className="px-6 py-4 font-medium">
+                        <div className="flex flex-col">
+                          <span>{displayValue(rx.medicine)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {displayValue(rx.dosage)} • {displayValue(rx.frequency)}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-muted-foreground">{formatDate(rx.startDate)}</td>
-                      <td className="px-6 py-4 text-muted-foreground">{formatDate(rx.endDate)}</td>
-                      <td className="px-6 py-4"><PrescriptionStatusBadge status={rx.status} /></td>
+                      <td className="px-6 py-4">{displayValue(rx.patientName)}</td>
+                      <td className="px-6 py-4 hidden md:table-cell text-muted-foreground">
+                        {displayValue(rx.doctor)}
+                      </td>
+                      <td className="px-6 py-4 text-muted-foreground">{displayValue(rx.startDate && formatDate(rx.startDate))}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{displayValue(rx.endDate && formatDate(rx.endDate))}</td>
+                      <td className="px-6 py-4"><PrescriptionStatusBadge status={normalizeStatus(rx.status) as PrescriptionStatus} /></td>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

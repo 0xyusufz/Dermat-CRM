@@ -21,6 +21,7 @@ const prescriptionStatusConfig: Record<
   Active: { variant: 'success', label: 'Active' },
   Completed: { variant: 'default', label: 'Completed' },
   Discontinued: { variant: 'danger', label: 'Discontinued' },
+  Stopped: { variant: 'danger', label: 'Discontinued' },
 }
 
 const followUpStatusConfig: Record<

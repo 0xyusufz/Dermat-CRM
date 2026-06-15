@@ -97,6 +97,52 @@ export interface PatientRecord {
   searchText: string
 }
 
+export interface PrescriptionSummary {
+  totalActivePrescriptions?: number
+  totalCompletedPrescriptions?: number
+}
+
+export interface FeaturedPrescriptionCard {
+  prescriptionId: string
+  medicine: string
+  patientName: string
+  startDate: string
+  endDate: string
+  status: string
+  daysRemaining?: number
+}
+
+export interface ActivePrescriptionRecord {
+  prescriptionId: string
+  patientId: string
+  patientName: string
+  doctor: string
+  phone: string
+  medicine: string
+  dosage: string
+  frequency: string
+  startDate: string
+  endDate: string
+  daysRemaining: number
+  status: string
+  searchText: string
+}
+
+export interface CompletedPrescriptionRecord {
+  prescriptionId: string
+  patientId: string
+  patientName: string
+  doctor: string
+  phone: string
+  medicine: string
+  dosage: string
+  frequency: string
+  startDate: string
+  endDate: string
+  status: string
+  searchText: string
+}
+
 export interface DashboardData {
   cards: DashboardCards
   recentRegistrations: RecentRegistration[]
@@ -112,4 +158,10 @@ export interface DashboardData {
   totalPatientsAvailable?: PatientRecord[]
   activePatientSummary?: PatientSummary
   totalActivePatients?: PatientRecord[]
+  totalActivePrescriptionSummary?: PrescriptionSummary
+  allFeaturedPrescriptions?: FeaturedPrescriptionCard[]
+  activePrescriptionsList?: ActivePrescriptionRecord[]
+  completedPrescriptionSummary?: PrescriptionSummary
+  featuredPrescriptions?: FeaturedPrescriptionCard[]
+  completedPrescriptions?: CompletedPrescriptionRecord[]
 }

@@ -5,7 +5,7 @@ export type PatientStatus =
   | 'Follow-Up Due'
   | 'Completed'
 
-export type PrescriptionStatus = 'Active' | 'Completed' | 'Discontinued'
+export type PrescriptionStatus = 'Active' | 'Completed' | 'Discontinued' | 'Stopped'
 
 export type FollowUpStatus =
   | 'Scheduled'
