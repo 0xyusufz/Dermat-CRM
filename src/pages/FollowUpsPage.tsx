@@ -11,6 +11,13 @@ import { useDashboard } from '@/hooks/useDashboard'
 import { formatDate } from '@/lib/utils'
 import type { FollowUpStatus } from '@/data/types'
 
+import { useCompleteFollowUp, COMPLETE_FOLLOW_UP_WORKFLOW_STEPS } from '@/hooks/useCompleteFollowUp'
+import { useRescheduleFollowUp, RESCHEDULE_FOLLOW_UP_WORKFLOW_STEPS } from '@/hooks/useRescheduleFollowUp'
+import { CompleteFollowUpModal } from '@/components/patient-profile/modals/CompleteFollowUpModal'
+import { RescheduleFollowUpModal } from '@/components/patient-profile/modals/RescheduleFollowUpModal'
+import { TransactionModals } from '@/components/workflow/TransactionModals'
+import type { PatientFollowUpRecord } from '@/data/patientProfileTypes'
+
 type FollowUpFilter = 'today' | 'upcoming' | 'missed' | 'completed'
 
 interface FollowUpsPageProps {
@@ -21,6 +28,12 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const { data, isLoading } = useDashboard()
+
+  const [completeTarget, setCompleteTarget] = useState<any | null>(null)
+  const [rescheduleTarget, setRescheduleTarget] = useState<any | null>(null)
+
+  const completeHook = useCompleteFollowUp()
+  const rescheduleHook = useRescheduleFollowUp()
 
   if (isLoading) {
     return <DashboardContentSkeleton />
@@ -73,7 +86,6 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
       break
   }
 
-  // Apply search filtering (except for today)
   if (filter !== 'today' && searchQuery.trim() !== '') {
     const query = searchQuery.trim().toLowerCase()
     rows = rows.filter((row) => {
@@ -90,6 +102,25 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
   const formatRescheduleCount = (c: number | undefined) => {
     if (c === 1) return '1 Time'
     return `${c ?? 0} Times`
+  }
+
+  const mapToRecord = (row: any): PatientFollowUpRecord => {
+    const resolvedDate = row.followupDate ?? row.date ?? ''
+    const resolvedTime = (row.followupTime ?? row.time ?? '').toLowerCase()
+
+    const timeSlot: 'Morning' | 'Afternoon' | 'Night' =
+      resolvedTime.includes('afternoon') ? 'Afternoon'
+      : resolvedTime.includes('night') ? 'Night'
+      : 'Morning'
+
+    return {
+      id: row.followupId ?? '',
+      patientId: row.patientId ?? '',
+      date: resolvedDate,
+      timeSlot,
+      status: row.status as FollowUpStatus,
+      source: 'Manual',
+    }
   }
 
   const completeBtnClass = "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm"
@@ -190,12 +221,20 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                           <td className="px-6 py-4">
                             <div className="flex flex-wrap gap-2">
                               {showCompleteButton && (
-                                <button type="button" className={completeBtnClass}>
+                                <button 
+                                  type="button" 
+                                  className={completeBtnClass}
+                                  onClick={() => setCompleteTarget(row)}
+                                >
                                   ✓ Complete
                                 </button>
                               )}
                               {showRescheduleButton && (
-                                <button type="button" className={rescheduleBtnClass}>
+                                <button 
+                                  type="button" 
+                                  className={rescheduleBtnClass}
+                                  onClick={() => setRescheduleTarget(row)}
+                                >
                                   ↻ Reschedule
                                 </button>
                               )}
@@ -211,6 +250,48 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
           </CardContent>
         </Card>
       )}
+
+      <TransactionModals
+        transaction={completeHook}
+        steps={[...COMPLETE_FOLLOW_UP_WORKFLOW_STEPS]}
+        loadingTitle="Completing Follow-Up"
+      />
+      <TransactionModals
+        transaction={rescheduleHook}
+        steps={[...RESCHEDULE_FOLLOW_UP_WORKFLOW_STEPS]}
+        loadingTitle="Rescheduling Follow-Up"
+      />
+      
+      <CompleteFollowUpModal
+        open={!!completeTarget}
+        onOpenChange={(open) => !open && setCompleteTarget(null)}
+        followUp={completeTarget ? mapToRecord(completeTarget) : null}
+        onConfirm={(notes) => {
+          if (completeTarget) {
+            completeHook.submit(
+              completeTarget.patientId ?? 'UNKNOWN',
+              completeTarget.patientName,
+              completeTarget.followupId ?? '',
+              notes
+            )
+          }
+        }}
+      />
+      
+      <RescheduleFollowUpModal
+        open={!!rescheduleTarget}
+        onOpenChange={(open) => !open && setRescheduleTarget(null)}
+        followUp={rescheduleTarget ? mapToRecord(rescheduleTarget) : null}
+        onSubmit={(input) => {
+          if (rescheduleTarget) {
+            rescheduleHook.submit(
+              rescheduleTarget.patientId ?? 'UNKNOWN',
+              rescheduleTarget.patientName,
+              input
+            )
+          }
+        }}
+      />
     </div>
   )
 }
