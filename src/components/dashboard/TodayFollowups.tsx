@@ -44,11 +44,11 @@ export function TodayFollowups({ followups, onComplete, onReschedule }: TodayFol
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="pb-3 font-medium">Patient</th>
-                <th className="pb-3 font-medium">Doctor</th>
-                <th className="pb-3 font-medium">Time</th>
-                <th className="pb-3 font-medium">Status</th>
-                <th className="pb-3 font-medium">Action</th>
+                <th className="px-4 pb-4 font-medium">Patient</th>
+                <th className="px-4 pb-4 font-medium">Doctor</th>
+                <th className="px-4 pb-4 font-medium">Time</th>
+                <th className="px-4 pb-4 font-medium">Status</th>
+                <th className="px-4 pb-4 font-medium">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -57,13 +57,18 @@ export function TodayFollowups({ followups, onComplete, onReschedule }: TodayFol
                   key={fu.followupId ?? `${fu.patientName}-${fu.time}`}
                   className="border-b border-border/50 last:border-0"
                 >
-                  <td className="py-3 font-medium">{fu.patientName}</td>
-                  <td className="py-3 text-muted-foreground">{fu.doctor}</td>
-                  <td className="py-3">{formatFollowupTime(fu.time)}</td>
-                  <td className="py-3">
+                  <td className="px-4 py-4 align-middle">
+                    <p className="font-medium leading-none">{fu.patientName}</p>
+                    {fu.patientId && (
+                      <p className="mt-1.5 text-xs text-muted-foreground">{fu.patientId}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 align-middle text-muted-foreground">{fu.doctor}</td>
+                  <td className="px-4 py-4 align-middle">{formatFollowupTime(fu.time)}</td>
+                  <td className="px-4 py-4 align-middle">
                     <FollowupStatusBadge status={fu.status} />
                   </td>
-                  <td className="py-3">
+                  <td className="px-4 py-4 align-middle">
                     <div className="flex flex-wrap gap-2">
                       <button 
                         type="button"

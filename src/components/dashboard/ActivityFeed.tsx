@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Bell,
@@ -61,6 +62,8 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ activities }: ActivityFeedProps) {
+  const navigate = useNavigate()
+
   return (
     <div className="space-y-0">
       {activities.map((activity, index) => {
@@ -89,12 +92,25 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
             </div>
             <div className="min-w-0 flex-1 pt-1">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium">{activity.title}</p>
+                {activity.patientCode ? (
+                  <button
+                    type="button"
+                    className="text-left text-sm font-medium hover:underline focus:outline-none"
+                    onClick={() => navigate(`/patients/${activity.patientCode}`)}
+                  >
+                    {activity.title}
+                  </button>
+                ) : (
+                  <p className="text-sm font-medium">{activity.title}</p>
+                )}
                 <span className="shrink-0 text-xs text-muted-foreground">
                   {formatRelativeTime(activity.createdAt)}
                 </span>
               </div>
               <p className="mt-0.5 text-sm text-muted-foreground">{activity.description}</p>
+              {activity.patientCode && (
+                <p className="mt-0.5 text-xs text-muted-foreground/70">{activity.patientCode}</p>
+              )}
             </div>
           </motion.div>
         )
