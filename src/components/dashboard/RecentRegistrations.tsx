@@ -44,30 +44,36 @@ export function RecentRegistrations({ registrations }: RecentRegistrationsProps)
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed text-sm">
+            <colgroup>
+              <col className="w-[15%]" />
+              <col className="w-[20%]" />
+              <col className="w-[22%] hidden lg:table-column" />
+              <col className="w-[15%]" />
+              <col className="w-[15%]" />
+              <col className="w-[13%]" />
+            </colgroup>
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="pb-3 font-medium">Patient ID</th>
-                <th className="pb-3 font-medium">Name</th>
-                <th className="pb-3 font-medium hidden md:table-cell">Phone</th>
-                <th className="pb-3 font-medium hidden lg:table-cell">Doctor</th>
-                <th className="pb-3 font-medium">Date</th>
-                <th className="pb-3 font-medium">Status</th>
-                <th className="pb-3 font-medium">Action</th>
+                <th className="px-3 pb-3 font-medium">Patient ID</th>
+                <th className="px-3 pb-3 font-medium">Name</th>
+                <th className="px-3 pb-3 font-medium hidden lg:table-cell">Doctor</th>
+                <th className="px-3 pb-3 font-medium">Date</th>
+                <th className="px-3 pb-3 font-medium text-center">Status</th>
+                <th className="px-3 pb-3 font-medium text-right">Action</th>
               </tr>
             </thead>
             <tbody>
               {registrations.map((patient) => (
                 <tr key={patient.patientId} className="border-b border-border/50 last:border-0">
-                  <td className="py-3 font-mono text-xs text-primary">{patient.patientId}</td>
-                  <td className="py-3 font-medium">{patient.name}</td>
-                  <td className="py-3 hidden md:table-cell text-muted-foreground">{patient.phone}</td>
-                  <td className="py-3 hidden lg:table-cell text-muted-foreground">{patient.doctor}</td>
-                  <td className="py-3 text-muted-foreground">{formatDate(patient.date)}</td>
-                  <td className="py-3">
+                  <td className="px-3 py-3 font-mono text-xs text-primary whitespace-nowrap">{patient.patientId}</td>
+                  <td className="px-3 py-3 font-medium truncate">{patient.name}</td>
+                  <td className="px-3 py-3 hidden lg:table-cell text-muted-foreground whitespace-nowrap">{patient.doctor}</td>
+                  <td className="px-3 py-3 text-muted-foreground whitespace-nowrap">{formatDate(patient.date)}</td>
+                  <td className="px-3 py-3 text-center">
                     <RegistrationStatusBadge status={patient.status} />
                   </td>
-                  <td className="py-3">
+                  <td className="px-3 py-3 text-right">
                     <Button
                       variant="outline"
                       size="sm"

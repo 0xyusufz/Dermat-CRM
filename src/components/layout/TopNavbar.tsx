@@ -24,7 +24,7 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         isIndexLoading={isLoading}
       />
 
-      <div className="flex items-center gap-2 [[data-sidebar-expanded=false]_&]:gap-4 [[data-sidebar-expanded=false]_&]:pr-4">
+      <div className="flex items-center gap-2 [[data-sidebar-expanded=true]_&]:ml-auto [[data-sidebar-expanded=true]_&]:gap-4 [[data-sidebar-expanded=false]_&]:ml-auto [[data-sidebar-expanded=false]_&]:gap-6 [[data-sidebar-expanded=false]_&]:pr-4">
         <Button
           variant="gradient"
           size="sm"
