@@ -16,13 +16,6 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [isAuthenticated, navigate])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -47,9 +40,6 @@ export function LoginPage() {
       setError(response.error?.message || 'Something went wrong. Please try again.')
     }
   }
-
-  // If we are authenticated, we shouldn't render the login form while waiting for the redirect
-  if (isAuthenticated) return null
 
   return (
     <div className="flex min-h-screen w-full bg-background">
