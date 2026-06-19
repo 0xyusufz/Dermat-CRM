@@ -32,6 +32,7 @@ export async function apiPost<TData>(
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
@@ -81,6 +82,7 @@ export async function apiPost<TData>(
 export async function apiGet<TData>(endpoint: string): Promise<ApiResult<TData>> {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     })
 
