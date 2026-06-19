@@ -6,22 +6,22 @@ export async function fetchPatient(patientId: string): Promise<PatientApiRespons
 
   try {
     response = await fetch(`${API_BASE_URL}/patient/${encodeURIComponent(patientId)}`, {
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     })
   } catch {
     throw new ApiError('Network request failed', 0)
   }
 
-  let json: PatientApiResponse & { success?: boolean; error?: string }
+  if (!response.ok) {
+    throw new ApiError(`Request failed: ${response.statusText}`, response.status)
+  }
 
+  let json: PatientApiResponse
   try {
     json = await response.json()
   } catch {
-    throw new ApiError('Invalid response from server', response.status || 500)
-  }
-
-  if (!response.ok || json.success === false) {
-    throw new ApiError(json.error ?? 'Request failed', response.status)
+    throw new ApiError('Invalid response from server', response.status)
   }
 
   if (!json.patientId || !json.patient) {
