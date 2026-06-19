@@ -21,7 +21,8 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route element={<AppLayout />}>
-              <Route index element={<DashboardPage />} />
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardPage />} />
               <Route path="registration" element={<RegistrationPage />} />
               <Route path="consultation" element={<ConsultationPage />} />
               <Route path="consultation/:patientId" element={<ConsultationPage />} />
@@ -36,7 +37,7 @@ export default function App() {
               <Route path="follow-ups/completed" element={<FollowUpsPage filter="completed" />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="settings" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
           </Routes>
         </BrowserRouter>
