@@ -18,7 +18,6 @@ export function registerSession(session: SyncSession): () => void {
   }
 
   activeSessions.set(key, session)
-  console.log(`[PostWriteSync] Registered new session for ${key} (${session.sessionId})`)
 
   return () => {
     // Empty cleanup function. Session survives component unmount.
@@ -30,6 +29,5 @@ export function removeSession(session: SyncSession, reason: string) {
   if (activeSessions.get(key)?.sessionId === session.sessionId) {
     session.abortController.abort(reason)
     activeSessions.delete(key)
-    console.log(`[PostWriteSync] Removed session for ${key} (${reason})`)
   }
 }

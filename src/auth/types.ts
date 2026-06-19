@@ -19,3 +19,5 @@ export type AuthAction =
   | { type: 'SESSION_RESTORED'; payload: User }
   | { type: 'SESSION_REJECTED' }
   | { type: 'SESSION_ERROR'; payload: string }
+  | { type: 'LOGOUT' }
+

@@ -167,7 +167,6 @@ function updateConsultationCache(
   patientId: string,
   response: unknown
 ) {
-  console.log(`[TRACE ISSUE 1] updateConsultationCache running for patientId: ${patientId}`)
   const res = response as {
     condition?: { id: string }
     followup?: { date: string; time: string }
@@ -182,10 +181,8 @@ function updateConsultationCache(
     ['patient', patientId],
     (oldData: PatientProfileSnapshot | undefined) => {
       if (!oldData) {
-        console.log(`[TRACE ISSUE 1] updateConsultationCache aborting - oldData is undefined`)
         return oldData
       }
-      console.log(`[TRACE ISSUE 1] updateConsultationCache proceeding - oldData exists`)
       const newData: PatientProfileSnapshot = { ...oldData, optimisticCreatedAt: Date.now() }
 
       let conditionName = 'New Condition'
@@ -388,17 +385,17 @@ function updateCompleteFollowUpCache(queryClient: QueryClient, patientId: string
   queryClient.setQueryData(['dashboard'], (oldDash: DashboardData | undefined) => {
     if (!oldDash) return oldDash
     const newDash = { ...oldDash, optimisticCreatedAt: Date.now() }
-    
+
     if (newDash.todayFollowups) {
-      newDash.todayFollowups = newDash.todayFollowups.filter(f => 
+      newDash.todayFollowups = newDash.todayFollowups.filter(f =>
         res?.followUpId ? f.followupId !== res.followUpId : f.patientId !== patientId
       )
     }
-    
+
     if (newDash.cards && newDash.cards.todayFollowups > 0) {
       newDash.cards = { ...newDash.cards, todayFollowups: newDash.cards.todayFollowups - 1 }
     }
-    
+
     return newDash
   })
 }
@@ -419,8 +416,8 @@ function updateMedicineCache(
       let title = 'Medicine Added'
       let desc = 'New prescription added'
 
-      const res = response as { 
-        input?: AddMedicineInput | UpdateMedicineInput; 
+      const res = response as {
+        input?: AddMedicineInput | UpdateMedicineInput;
         reason?: DiscontinueReason;
         medicineId?: string;
         conditionId?: string;
@@ -487,7 +484,7 @@ function updateMedicineCache(
                 const input = res.input as UpdateMedicineInput;
                 let newDuration = med.durationDays;
                 let newStartDate = med.startDate;
-                
+
                 if (input.updateMode === 'Extend' && input.extendDays) {
                   newDuration += input.extendDays;
                 } else if (input.updateMode === 'Replace_Current' && input.replaceDurationDays) {

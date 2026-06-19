@@ -1,76 +1,136 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Menu, Moon, Plus, Sun, User } from 'lucide-react'
+import { LogOut, Menu, Moon, Plus, Sun, User } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GlobalPatientSearch } from '@/components/search/GlobalPatientSearch'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useDashboard } from '@/hooks/useDashboard'
+import { useAuth } from '@/auth/useAuth'
 
 export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const { data, isLoading } = useDashboard()
+  const { logout } = useAuth()
+
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await logout()
+      setIsLogoutDialogOpen(false)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border glass px-4 sm:gap-4 sm:px-6">
-      <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={onMenuClick}>
-        <Menu className="h-5 w-5" />
-      </Button>
-
-      <GlobalPatientSearch
-        patientSearchIndex={data?.patientSearchIndex}
-        isIndexLoading={isLoading}
-      />
-
-      <div className="flex items-center gap-2 [[data-sidebar-expanded=true]_&]:ml-auto [[data-sidebar-expanded=true]_&]:gap-4 [[data-sidebar-expanded=false]_&]:ml-auto [[data-sidebar-expanded=false]_&]:gap-6 [[data-sidebar-expanded=false]_&]:pr-4">
-        <Button
-          variant="gradient"
-          size="sm"
-          className="hidden sm:inline-flex"
-          onClick={() => navigate('/registration')}
-        >
-          <Plus className="h-4 w-4" />
-          Quick Action
+    <>
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border glass px-4 sm:gap-4 sm:px-6">
+        <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={onMenuClick}>
+          <Menu className="h-5 w-5" />
         </Button>
 
-        <div className="hidden items-center gap-2 rounded-xl border border-border px-3 py-1.5 sm:flex">
-          {isDark ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
-          <Switch checked={isDark} onCheckedChange={toggleTheme} />
-        </div>
+        <GlobalPatientSearch
+          patientSearchIndex={data?.patientSearchIndex}
+          isIndexLoading={isLoading}
+        />
 
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <button className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-muted/60 transition-colors cursor-pointer">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>AM</AvatarFallback>
-              </Avatar>
-              <div className="hidden text-left md:block">
-                <p className="text-sm font-medium leading-none">Admin Manager</p>
-                <p className="text-xs text-muted-foreground">Clinic Manager</p>
-              </div>
-            </button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              align="end"
-              sideOffset={8}
-              className="z-50 w-48 rounded-2xl border border-border bg-card p-1 shadow-xl"
-            >
-              <DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none hover:bg-muted/60">
-                <User className="h-4 w-4" /> Profile
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none hover:bg-muted/60"
-                onClick={() => navigate('/settings')}
+        <div className="flex items-center gap-2 [[data-sidebar-expanded=true]_&]:ml-auto [[data-sidebar-expanded=true]_&]:gap-4 [[data-sidebar-expanded=false]_&]:ml-auto [[data-sidebar-expanded=false]_&]:gap-6 [[data-sidebar-expanded=false]_&]:pr-4">
+          <Button
+            variant="gradient"
+            size="sm"
+            className="hidden sm:inline-flex"
+            onClick={() => navigate('/registration')}
+          >
+            <Plus className="h-4 w-4" />
+            Quick Action
+          </Button>
+
+          <div className="hidden items-center gap-2 rounded-xl border border-border px-3 py-1.5 sm:flex">
+            {isDark ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
+            <Switch checked={isDark} onCheckedChange={toggleTheme} />
+          </div>
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-muted/60 transition-colors cursor-pointer">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>AM</AvatarFallback>
+                </Avatar>
+                <div className="hidden text-left md:block">
+                  <p className="text-sm font-medium leading-none">Admin Manager</p>
+                  <p className="text-xs text-muted-foreground">Clinic Manager</p>
+                </div>
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={8}
+                className="z-50 w-48 rounded-2xl border border-border bg-card p-1 shadow-xl"
               >
-                Settings
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
-      </div>
-    </header>
+                <DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none hover:bg-muted/60">
+                  <User className="h-4 w-4" /> Profile
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none hover:bg-muted/60"
+                  onClick={() => navigate('/settings')}
+                >
+                  Settings
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator className="my-1 h-px bg-border" />
+                <DropdownMenu.Item
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 focus:bg-red-50 dark:focus:bg-red-950/50"
+                  onClick={() => setIsLogoutDialogOpen(true)}
+                >
+                  <LogOut className="h-4 w-4" /> Logout
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        </div>
+      </header>
+
+      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Logout</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to logout?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsLogoutDialogOpen(false)}
+              disabled={isLoggingOut}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

@@ -30,10 +30,7 @@ export function startPollingEngine(queryClient: QueryClient, session: SyncSessio
         session.baselinePatientVersion
       )
       if (fresh) {
-        console.log(`[TRACE ISSUE 1] checkPatientFreshness resolved to TRUE`)
         patientResolved = true
-      } else {
-        console.log(`[TRACE ISSUE 1] checkPatientFreshness resolved to FALSE`)
       }
     }
 
@@ -44,7 +41,6 @@ export function startPollingEngine(queryClient: QueryClient, session: SyncSessio
 
     const nextIndex = index + 1
     if (nextIndex >= POLLING_INTERVALS.length) {
-      console.log(`[PostWriteSync] Session ${session.sessionId} expired after 30s. Keeping optimistic data.`)
       removeSession(session, 'EXPIRED')
       return
     }

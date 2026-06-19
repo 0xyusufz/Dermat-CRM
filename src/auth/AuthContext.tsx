@@ -19,6 +19,8 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       return { ...state, status: 'unauthenticated', user: null, error: null }
     case 'SESSION_ERROR':
       return { ...state, status: 'error', error: action.payload }
+    case 'LOGOUT':
+      return { ...state, status: 'unauthenticated', user: null, error: null }
     default:
       return state
   }
@@ -27,6 +29,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 export const AuthContext = createContext<{
   state: AuthState
   retryInitialization: () => void
+  clearSession: () => void
 } | undefined>(undefined)
 
 interface AuthProviderProps {
@@ -64,6 +67,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [initializeAuth])
 
+  const clearSession = useCallback(() => {
+    dispatch({ type: 'LOGOUT' })
+  }, [])
+
   // While in loading state, show the startup loader instead of rendering the app
   // This prevents unauthenticated UI from flashing before the session is verified
   if (state.status === 'idle' || state.status === 'loading') {
@@ -76,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   return (
-    <AuthContext.Provider value={{ state, retryInitialization: initializeAuth }}>
+    <AuthContext.Provider value={{ state, retryInitialization: initializeAuth, clearSession }}>
       {children}
     </AuthContext.Provider>
   )
