@@ -30,7 +30,7 @@ const EMPTY_FORM: RegistrationFormValues = {
   gender: '',
   whatsapp: '',
   address: '',
-  doctorName: '',
+  doctorName: 'Rizwana Barkat',
 }
 
 export function useRegistration() {

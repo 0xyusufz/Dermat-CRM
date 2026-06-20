@@ -124,7 +124,7 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold leading-tight">Automated</p>
-                <p className="truncate text-xs text-muted-foreground">Demat Clinic</p>
+                <p className="truncate text-xs text-muted-foreground">Dermat Clinic</p>
               </div>
             </motion.div>
           )}

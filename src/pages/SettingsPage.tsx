@@ -24,7 +24,7 @@ export function SettingsPage() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label>Clinic Name</Label>
-              <Input defaultValue="Automated Demat Clinic" className="mt-1.5" />
+              <Input defaultValue="Automated Dermat Clinic" className="mt-1.5" />
             </div>
             <div>
               <Label>Phone</Label>

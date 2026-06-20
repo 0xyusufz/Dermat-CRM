@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { doctors } from '@/data/mockData'
 import { REGISTRATION_WORKFLOW_STEPS, useRegistration } from '@/hooks/useRegistration'
 import { cn } from '@/lib/utils'
 
@@ -25,7 +24,6 @@ export function RegistrationPage() {
     form,
     errors,
     isValid,
-    doctorNames,
     updateField,
     markTouched,
     setTouchedAll,
@@ -38,9 +36,7 @@ export function RegistrationPage() {
     lastPatientCode,
   } = useRegistration()
 
-  const allDoctorNames = [
-    ...new Set([...doctorNames, ...doctors.map((d) => d.name)]),
-  ].sort((a, b) => a.localeCompare(b))
+  const allDoctorNames = ['Rizwana Barkat', 'Muzammil Barkat']
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
