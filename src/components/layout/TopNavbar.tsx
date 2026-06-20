@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { LogOut, Menu, Moon, Plus, Sun, User } from 'lucide-react'
+import { Loader2, LogOut, Menu, Moon, Plus, Sun, User } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GlobalPatientSearch } from '@/components/search/GlobalPatientSearch'
@@ -26,14 +26,21 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
+    setLogoutError(null)
     try {
-      await logout()
+      const response = await logout()
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Logout failed')
+      }
       setIsLogoutDialogOpen(false)
-    } finally {
+    } catch (err: any) {
       setIsLoggingOut(false)
+      setLogoutError('Failed to logout. Please try again.')
+      setTimeout(() => setLogoutError(null), 5000)
     }
   }
 
@@ -105,7 +112,7 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
       </header>
 
-      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+      <Dialog open={isLogoutDialogOpen} onOpenChange={(open) => !isLoggingOut && setIsLogoutDialogOpen(open)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Logout</DialogTitle>
@@ -126,11 +133,31 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
               onClick={handleLogout}
               disabled={isLoggingOut}
             >
-              {isLoggingOut ? 'Logging out...' : 'Logout'}
+              Logout
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Full-screen logout loading overlay */}
+      {isLoggingOut && (
+        <div
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200"
+          aria-busy="true"
+          role="alert"
+        >
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-6" />
+          <h2 className="text-2xl font-semibold text-foreground tracking-tight">Logging out securely...</h2>
+          <p className="mt-2 text-muted-foreground">Please wait while we clear your session.</p>
+        </div>
+      )}
+
+      {/* Error Toast */}
+      {logoutError && (
+        <div className="fixed bottom-4 right-4 z-[10000] rounded-lg bg-red-600 px-4 py-3 text-white shadow-lg animate-in fade-in slide-in-from-bottom-4">
+          <p className="text-sm font-medium">{logoutError}</p>
+        </div>
+      )}
     </>
   )
 }
