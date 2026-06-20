@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/api/client'
+import { apiClient } from '@/lib/apiClient'
 import type { User } from './types'
 
 export interface AuthResponse<T> {
@@ -13,7 +14,7 @@ export interface AuthResponse<T> {
 export const authService = {
   async getMe(signal?: AbortSignal): Promise<AuthResponse<{ user: User }>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      const response = await apiClient(`${API_BASE_URL}/auth/me`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -35,12 +36,6 @@ export const authService = {
       }
 
       return { success: true, data: json.data }
-      // return {
-      //   success: true,
-      //   data: {
-      //     user: json.user
-      //   }
-      // }
     } catch (err: any) {
       if (err.name === 'AbortError') {
         throw err // Let AbortError propagate so React can handle it
@@ -51,7 +46,7 @@ export const authService = {
 
   async login(credentials: any): Promise<AuthResponse<{ user: User }>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await apiClient(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -73,12 +68,6 @@ export const authService = {
       }
 
       return { success: true, data: json.data }
-      // return {
-      //   success: true,
-      //   data: {
-      //     user: json.user
-      //   }
-      // }
     } catch (err: any) {
       return { success: false, error: { message: err.message || 'Network error', code: 'NETWORK_ERROR' } }
     }
@@ -86,7 +75,7 @@ export const authService = {
 
   async logout(): Promise<AuthResponse<null>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      const response = await apiClient(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

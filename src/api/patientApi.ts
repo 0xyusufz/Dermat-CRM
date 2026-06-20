@@ -1,11 +1,12 @@
 import { ApiError, API_BASE_URL } from './client'
 import type { PatientApiResponse } from './patientTypes'
+import { apiClient } from '@/lib/apiClient'
 
 export async function fetchPatient(patientId: string): Promise<PatientApiResponse> {
   let response: Response
 
   try {
-    response = await fetch(`${API_BASE_URL}/patient/${encodeURIComponent(patientId)}`, {
+    response = await apiClient(`${API_BASE_URL}/patient/${encodeURIComponent(patientId)}`, {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     })

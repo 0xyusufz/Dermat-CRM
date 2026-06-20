@@ -1,4 +1,6 @@
-import { createContext, useCallback, useEffect, useReducer, type ReactNode } from 'react'
+import { createContext, useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { authService } from './authService'
 import type { AuthAction, AuthState } from './types'
 import { StartupLoader } from '@/components/shared/StartupLoader'
@@ -11,18 +13,12 @@ const initialState: AuthState = {
 
 function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
-    case 'CHECK_SESSION_START':
-      return { ...state, status: 'loading', error: null }
-    case 'SESSION_RESTORED':
-      return { ...state, status: 'authenticated', user: action.payload, error: null }
-    case 'SESSION_REJECTED':
-      return { ...state, status: 'unauthenticated', user: null, error: null }
-    case 'SESSION_ERROR':
-      return { ...state, status: 'error', error: action.payload }
-    case 'LOGOUT':
-      return { ...state, status: 'unauthenticated', user: null, error: null }
-    default:
-      return state
+    case 'CHECK_SESSION_START': return { ...state, status: 'loading', error: null }
+    case 'SESSION_RESTORED': return { ...state, status: 'authenticated', user: action.payload, error: null }
+    case 'SESSION_REJECTED': return { ...state, status: 'unauthenticated', user: null, error: null }
+    case 'SESSION_ERROR': return { ...state, status: 'error', error: action.payload }
+    case 'LOGOUT': return { ...state, status: 'unauthenticated', user: null, error: null }
+    default: return state
   }
 }
 
@@ -32,19 +28,21 @@ export const AuthContext = createContext<{
   clearSession: () => void
 } | undefined>(undefined)
 
-interface AuthProviderProps {
-  children: ReactNode
-}
+interface AuthProviderProps { children: ReactNode }
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [state, dispatch] = useReducer(authReducer, initialState)
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  
+  const isHandlingUnauthorized = useRef(false)
+  const [sessionExpiredToast, setSessionExpiredToast] = useState(false)
 
   const initializeAuth = useCallback(async (signal?: AbortSignal) => {
     dispatch({ type: 'CHECK_SESSION_START' })
 
     const response = await authService.getMe(signal)
 
-    // If the request was aborted, don't update state
     if (signal?.aborted) return
 
     if (response.success && response.data) {
@@ -57,27 +55,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   useEffect(() => {
-    // We use an AbortController to handle React 18 StrictMode double-invocations
     const controller = new AbortController()
-
     initializeAuth(controller.signal)
-
-    return () => {
-      controller.abort()
-    }
+    return () => controller.abort()
   }, [initializeAuth])
 
   const clearSession = useCallback(() => {
     dispatch({ type: 'LOGOUT' })
   }, [])
 
-  // While in loading state, show the startup loader instead of rendering the app
-  // This prevents unauthenticated UI from flashing before the session is verified
+  // Global Unauthorized Listener
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      if (isHandlingUnauthorized.current) return
+      isHandlingUnauthorized.current = true
+
+      clearSession()
+      queryClient.clear()
+      navigate('/login', { replace: true })
+      
+      setSessionExpiredToast(true)
+      
+      setTimeout(() => {
+        setSessionExpiredToast(false)
+        isHandlingUnauthorized.current = false
+      }, 5000)
+    }
+
+  }, [clearSession, navigate, queryClient])
+
   if (state.status === 'idle' || state.status === 'loading') {
     return <StartupLoader />
   }
 
-  // If there's a network error during startup, show the error state with a retry button
   if (state.status === 'error') {
     return <StartupLoader error={state.error} onRetry={() => initializeAuth()} />
   }
@@ -85,6 +95,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <AuthContext.Provider value={{ state, retryInitialization: initializeAuth, clearSession }}>
       {children}
+      {sessionExpiredToast && (
+        <div className="fixed bottom-4 right-4 z-[10000] max-w-[90vw] rounded-lg bg-red-600 px-4 py-3 text-white shadow-xl animate-in fade-in slide-in-from-bottom-4">
+          <p className="text-sm font-medium">Session expired. Please login again.</p>
+        </div>
+      )}
     </AuthContext.Provider>
   )
 }

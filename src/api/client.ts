@@ -1,3 +1,5 @@
+import { apiClient as fetchWrapper } from '@/lib/apiClient'
+
 export const API_BASE_URL = import.meta.env.VITE_API_URL
 
 if (!API_BASE_URL) {
@@ -15,7 +17,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetchWrapper(`${API_BASE_URL}${endpoint}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
