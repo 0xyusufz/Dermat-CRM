@@ -34,7 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [state, dispatch] = useReducer(authReducer, initialState)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  
+
   const isHandlingUnauthorized = useRef(false)
   const [sessionExpiredToast, setSessionExpiredToast] = useState(false)
 
@@ -65,23 +65,54 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   // Global Unauthorized Listener
+  // useEffect(() => {
+  //   const handleUnauthorized = () => {
+  //     if (isHandlingUnauthorized.current) return
+  //     isHandlingUnauthorized.current = true
+
+  //     clearSession()
+  //     queryClient.clear()
+  //     navigate('/login', { replace: true })
+
+  //     setSessionExpiredToast(true)
+
+  //     setTimeout(() => {
+  //       setSessionExpiredToast(false)
+  //       isHandlingUnauthorized.current = false
+  //     }, 5000)
+  //   }
+
+  // }, [clearSession, navigate, queryClient])
   useEffect(() => {
     const handleUnauthorized = () => {
       if (isHandlingUnauthorized.current) return
+
       isHandlingUnauthorized.current = true
 
       clearSession()
       queryClient.clear()
+
       navigate('/login', { replace: true })
-      
+
       setSessionExpiredToast(true)
-      
+
       setTimeout(() => {
         setSessionExpiredToast(false)
         isHandlingUnauthorized.current = false
       }, 5000)
     }
 
+    window.addEventListener(
+      'auth:unauthorized',
+      handleUnauthorized
+    )
+
+    return () => {
+      window.removeEventListener(
+        'auth:unauthorized',
+        handleUnauthorized
+      )
+    }
   }, [clearSession, navigate, queryClient])
 
   if (state.status === 'idle' || state.status === 'loading') {
