@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import {  useState } from 'react'
+// import { useNavigate } from 'react-router-dom'
 import { Activity, CheckCircle2, Loader2 } from 'lucide-react'
 import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const { login, isAuthenticated, retryInitialization } = useAuth()
+  // const navigate = useNavigate()
+  const { login,  retryInitialization } = useAuth()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')

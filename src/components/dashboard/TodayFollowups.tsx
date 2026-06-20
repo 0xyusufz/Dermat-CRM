@@ -2,7 +2,7 @@ import type { FollowUpStatus } from '@/data/types'
 import type { TodayFollowupItem } from '@/api/types'
 import { FollowUpStatusBadge } from '@/components/shared/StatusBadge'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+// import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatTime } from '@/lib/utils'
 

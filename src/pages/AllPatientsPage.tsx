@@ -1,4 +1,4 @@
-import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
+import { Link,  useSearchParams, useLocation } from 'react-router-dom'
 import { ClipboardList, UserPlus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { PatientFilters, type PatientFiltersState, defaultPatientFilters } from '@/components/patients/PatientFilters'
