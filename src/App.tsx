@@ -14,6 +14,7 @@ import { PatientProfilePage } from '@/pages/PatientProfilePage'
 import { PrescriptionsPage } from '@/pages/PrescriptionsPage'
 import { RegistrationPage } from '@/pages/RegistrationPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { FeedbackPage } from '@/pages/FeedbackPage'
 
 export default function App() {
   return (
@@ -21,6 +22,9 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            {/* Public feedback route — no auth required */}
+            <Route path="/review/:token" element={<FeedbackPage />} />
+
             <Route element={<PublicRoute />}>
               <Route path="/login" element={<LoginPage />} />
             </Route>
