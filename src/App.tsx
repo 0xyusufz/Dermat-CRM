@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, Outlet } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AuthProvider } from '@/auth/AuthContext'
@@ -20,11 +20,18 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            {/* Public feedback route — no auth required */}
-            <Route path="/review/:token" element={<FeedbackPage />} />
+        <Routes>
+          {/* Public feedback route — no auth required */}
+          <Route path="/review/:token" element={<FeedbackPage />} />
 
+          {/* CRM App — wrapped with AuthProvider */}
+          <Route
+            element={
+              <AuthProvider>
+                <Outlet />
+              </AuthProvider>
+            }
+          >
             <Route element={<PublicRoute />}>
               <Route path="/login" element={<LoginPage />} />
             </Route>
@@ -50,8 +57,8 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Route>
             </Route>
-          </Routes>
-        </AuthProvider>
+          </Route>
+        </Routes>
       </BrowserRouter>
     </ThemeProvider>
   )
