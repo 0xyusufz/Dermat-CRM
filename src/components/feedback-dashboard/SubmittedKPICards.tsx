@@ -4,9 +4,17 @@ import type { DashboardReview } from './types';
 
 interface SubmittedKPICardsProps {
   data: DashboardReview[];
+  onTotalSubmittedClick?: () => void;
+  onHighRatingsClick?: () => void;
+  onPublicJourneyClick?: () => void;
 }
 
-export function SubmittedKPICards({ data }: SubmittedKPICardsProps) {
+export function SubmittedKPICards({ 
+  data, 
+  onTotalSubmittedClick, 
+  onHighRatingsClick, 
+  onPublicJourneyClick 
+}: SubmittedKPICardsProps) {
   const totalSubmitted = data.length;
   const highRatings = data.filter((r) => r.rating !== null && r.rating >= 4).length;
   
@@ -20,7 +28,10 @@ export function SubmittedKPICards({ data }: SubmittedKPICardsProps) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-      <Card>
+      <Card 
+        className={onTotalSubmittedClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""} 
+        onClick={onTotalSubmittedClick}
+      >
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-muted-foreground">Total Submitted</p>
@@ -32,7 +43,10 @@ export function SubmittedKPICards({ data }: SubmittedKPICardsProps) {
         </CardContent>
       </Card>
       
-      <Card>
+      <Card 
+        className={onHighRatingsClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""} 
+        onClick={onHighRatingsClick}
+      >
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-muted-foreground">High Ratings (4-5 ★)</p>
@@ -44,7 +58,10 @@ export function SubmittedKPICards({ data }: SubmittedKPICardsProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card 
+        className={onPublicJourneyClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""} 
+        onClick={onPublicJourneyClick}
+      >
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-muted-foreground">Public Review Journey</p>

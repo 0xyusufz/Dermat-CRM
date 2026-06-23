@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { FeedbackStatusBadge } from './FeedbackStatusBadge';
+import { formatSubmittedAt } from './formatSubmittedAt';
 import { Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { DashboardReview } from './types';
@@ -90,8 +91,7 @@ export function FeedbackMobileList({ mode = 'all', data, onRowClick, onResendCli
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Submitted</p>
-                <p className="text-foreground">{displayValue(row.submittedDate)}</p>
-                <p className="text-xs text-muted-foreground">{displayValue(row.submittedTime)}</p>
+                {(() => { const fmt = formatSubmittedAt(row.submittedAt); return (<><p className="text-foreground">{fmt.date}</p><p className="text-xs text-muted-foreground">{fmt.time}</p></>); })()}
               </div>
             </div>
 

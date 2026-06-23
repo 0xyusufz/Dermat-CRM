@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { FeedbackStatusBadge } from './FeedbackStatusBadge';
+import { formatSubmittedAt } from './formatSubmittedAt';
 import { Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { DashboardReview } from './types';
@@ -102,8 +103,7 @@ export function FeedbackTable({ mode = 'all', data, onRowClick, onResendClick }:
                     {displayValue(row.doctorName)}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-foreground">{displayValue(row.submittedDate)}</div>
-                    <div className="text-xs text-muted-foreground">{displayValue(row.submittedTime)}</div>
+                    {(() => { const fmt = formatSubmittedAt(row.submittedAt); return (<><div className="text-foreground">{fmt.date}</div><div className="text-xs text-muted-foreground">{fmt.time}</div></>); })()}
                   </td>
                   <td className="px-6 py-4">
                     {mode === 'all' ? (

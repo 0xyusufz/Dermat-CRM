@@ -10,6 +10,7 @@ import { ResendLinkModal } from '@/components/feedback-dashboard/ResendLinkModal
 
 import { useDashboard } from '@/hooks/useDashboard';
 import { DashboardContentSkeleton } from '@/components/dashboard/DashboardSkeleton';
+import { parseSubmittedAtDate } from '@/components/feedback-dashboard/formatSubmittedAt';
 import type { DashboardReview } from '@/components/feedback-dashboard/types';
 
 export function AllReviewsPage() {
@@ -70,20 +71,15 @@ export function AllReviewsPage() {
 
     // 5. Time
     if (timeFilter !== 'All Time') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
 
       result = result.filter((r) => {
-        if (!r.visitDate) return false;
-        
-        const regParts = r.visitDate.split('-');
-        if (regParts.length !== 3) return false;
-        
-        const regDate = new Date(parseInt(regParts[0], 10), parseInt(regParts[1], 10) - 1, parseInt(regParts[2], 10));
-        regDate.setHours(0, 0, 0, 0);
+        const regDate = parseSubmittedAtDate(r.submittedAt);
+        if (!regDate) return false;
 
-        const diffTime = today.getTime() - regDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const diffTime = todayDate.getTime() - regDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
         if (timeFilter === 'Today') return diffDays === 0;
         if (timeFilter === 'Last 7 Days') return diffDays >= 0 && diffDays <= 7;
@@ -136,7 +132,23 @@ export function AllReviewsPage() {
         description="Track patient feedback requests, submissions, ratings, and review activity."
       />
 
-      <FeedbackKPICards summary={summary} />
+      <FeedbackKPICards 
+        summary={summary} 
+        onReviewsSubmittedClick={() => {
+          setSearch('');
+          setRatingFilter('All Ratings');
+          setDoctorFilter('All Doctors');
+          setTimeFilter('All Time');
+          setStatusFilter('Completed');
+        }}
+        onPendingReviewsClick={() => {
+          setSearch('');
+          setRatingFilter('All Ratings');
+          setDoctorFilter('All Doctors');
+          setTimeFilter('All Time');
+          setStatusFilter('Pending');
+        }}
+      />
 
       <FeedbackFilters
         search={search}

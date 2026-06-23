@@ -4,9 +4,11 @@ import type { ReviewSummary } from './types';
 
 interface FeedbackKPICardsProps {
   summary?: ReviewSummary;
+  onReviewsSubmittedClick?: () => void;
+  onPendingReviewsClick?: () => void;
 }
 
-export function FeedbackKPICards({ summary }: FeedbackKPICardsProps) {
+export function FeedbackKPICards({ summary, onReviewsSubmittedClick, onPendingReviewsClick }: FeedbackKPICardsProps) {
   const totalRequests = summary?.totalReviewRequests || 0;
   const completedReviews = summary?.reviewsSubmitted || 0;
   const pendingReviews = summary?.pendingReviews || 0;
@@ -26,7 +28,10 @@ export function FeedbackKPICards({ summary }: FeedbackKPICardsProps) {
         </CardContent>
       </Card>
       
-      <Card>
+      <Card 
+        className={onReviewsSubmittedClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""} 
+        onClick={onReviewsSubmittedClick}
+      >
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-muted-foreground">Reviews Submitted</p>
@@ -38,7 +43,10 @@ export function FeedbackKPICards({ summary }: FeedbackKPICardsProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card 
+        className={onPendingReviewsClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""} 
+        onClick={onPendingReviewsClick}
+      >
         <CardContent className="p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-muted-foreground">Pending Reviews</p>

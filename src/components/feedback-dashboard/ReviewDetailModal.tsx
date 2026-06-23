@@ -4,6 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { formatSubmittedAt } from './formatSubmittedAt';
 import { formatDate } from '@/lib/utils';
 import { FeedbackStatusBadge } from './FeedbackStatusBadge';
 import { Star } from 'lucide-react';
@@ -47,7 +48,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-xl">Review Details</DialogTitle>
         </DialogHeader>
@@ -98,9 +99,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Submitted Date</p>
-                <p className="text-sm font-medium">
-                  {displayValue(review.submittedDate)}
-                </p>
+                {(() => { const fmt = formatSubmittedAt(review.submittedAt); return (<><p className="text-sm font-medium">{fmt.date}</p><p className="text-xs text-muted-foreground">{fmt.time}</p></>); })()}
               </div>
               <div className="col-span-2">
                 <p className="text-xs text-muted-foreground mb-1">Reasons</p>
