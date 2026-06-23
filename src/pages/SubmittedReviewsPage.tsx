@@ -1,15 +1,149 @@
+import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { EmptyState } from '@/components/patient-profile/EmptyState';
+import { SubmittedKPICards } from '@/components/feedback-dashboard/SubmittedKPICards';
+import { FeedbackFilters } from '@/components/feedback-dashboard/FeedbackFilters';
+import { FeedbackTable } from '@/components/feedback-dashboard/FeedbackTable';
+import { FeedbackMobileList } from '@/components/feedback-dashboard/FeedbackMobileList';
+import { ReviewDetailModal } from '@/components/feedback-dashboard/ReviewDetailModal';
+
+import { mockReviews } from '@/mock/mockReviews';
+import type { DashboardReview } from '@/components/feedback-dashboard/types';
 
 export function SubmittedReviewsPage() {
+  // ─── State ───
+  const [search, setSearch] = useState('');
+  const [ratingFilter, setRatingFilter] = useState('All Ratings');
+  const [journeyFilter, setJourneyFilter] = useState('All Journeys');
+  const [doctorFilter, setDoctorFilter] = useState('All Doctors');
+  const [timeFilter, setTimeFilter] = useState('All Time');
+
+  const [selectedReview, setSelectedReview] = useState<DashboardReview | null>(null);
+
+  // ─── Data Derivation ───
+  // Hard ceiling: Only ever process Completed reviews
+  const baseDataset = useMemo(() => {
+    return mockReviews.filter((r) => r.status === 'Completed');
+  }, []);
+  
+  const availableDoctors = useMemo(() => {
+    const docs = new Set(baseDataset.map(r => r.doctor));
+    return Array.from(docs).filter(Boolean).sort();
+  }, [baseDataset]);
+
+  // ─── Filtering Logic ───
+  const filteredRows = useMemo(() => {
+    let result = baseDataset;
+
+    // 1. Search
+    if (search.trim() !== '') {
+      const query = search.trim().toLowerCase();
+      result = result.filter((r) => r.searchText.toLowerCase().includes(query));
+    }
+
+    // 2. Rating
+    if (ratingFilter !== 'All Ratings') {
+      if (ratingFilter === '4-5 Stars') {
+        result = result.filter((r) => r.rating !== null && r.rating >= 4);
+      } else if (ratingFilter === '1-3 Stars') {
+        result = result.filter((r) => r.rating !== null && r.rating >= 1 && r.rating <= 3);
+      } else {
+        const targetRating = parseInt(ratingFilter.split(' ')[0], 10);
+        result = result.filter((r) => r.rating === targetRating);
+      }
+    }
+
+    // 3. Review Journey (Google Redirect)
+    if (journeyFilter !== 'All Journeys') {
+      if (journeyFilter === 'Public Review') {
+        result = result.filter((r) => r.googleRedirected === true);
+      } else if (journeyFilter === 'Internal Feedback') {
+        result = result.filter((r) => r.googleRedirected === false);
+      }
+    }
+
+    // 4. Doctor
+    if (doctorFilter !== 'All Doctors') {
+      result = result.filter((r) => r.doctor === doctorFilter);
+    }
+
+    // 5. Time
+    if (timeFilter !== 'All Time') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      result = result.filter((r) => {
+        const refDateStr = r.submittedAt || r.generatedAt;
+        if (!refDateStr) return false;
+        
+        const refDate = new Date(refDateStr);
+        refDate.setHours(0, 0, 0, 0);
+
+        const diffTime = today.getTime() - refDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (timeFilter === 'Today') return diffDays === 0;
+        if (timeFilter === 'Last 7 Days') return diffDays >= 0 && diffDays <= 7;
+        if (timeFilter === 'Last 30 Days') return diffDays >= 0 && diffDays <= 30;
+
+        return true;
+      });
+    }
+
+    return result;
+  }, [baseDataset, search, ratingFilter, journeyFilter, doctorFilter, timeFilter]);
+
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
       <PageHeader
         title="Submitted Reviews"
-        description="Coming Soon: Detailed analytics and deep dive into submitted patient reviews."
+        description="Deep dive analytics into completed patient feedback and external review conversion."
       />
-      <div className="flex items-center justify-center h-64 border rounded-xl border-dashed border-border">
-        <p className="text-muted-foreground">This page is under construction.</p>
-      </div>
+
+      <SubmittedKPICards data={baseDataset} />
+
+      <FeedbackFilters
+        mode="submitted"
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter=""
+        onStatusFilterChange={() => {}}
+        ratingFilter={ratingFilter}
+        onRatingFilterChange={setRatingFilter}
+        journeyFilter={journeyFilter}
+        onJourneyFilterChange={setJourneyFilter}
+        doctorFilter={doctorFilter}
+        onDoctorFilterChange={setDoctorFilter}
+        timeFilter={timeFilter}
+        onTimeFilterChange={setTimeFilter}
+        availableDoctors={availableDoctors}
+      />
+
+      {filteredRows.length === 0 ? (
+        <div className="py-12">
+          <EmptyState title="No matching reviews found." />
+        </div>
+      ) : (
+        <>
+          <FeedbackTable 
+            mode="submitted"
+            data={filteredRows} 
+            onRowClick={setSelectedReview} 
+          />
+          <FeedbackMobileList 
+            mode="submitted"
+            data={filteredRows} 
+            onRowClick={setSelectedReview} 
+          />
+        </>
+      )}
+
+      {/* Modals */}
+      <ReviewDetailModal
+        open={!!selectedReview}
+        onOpenChange={(open) => !open && setSelectedReview(null)}
+        review={selectedReview}
+      />
     </div>
   );
 }

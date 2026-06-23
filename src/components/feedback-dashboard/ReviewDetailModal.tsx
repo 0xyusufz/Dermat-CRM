@@ -125,6 +125,35 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
             </div>
           </div>
 
+          {/* Resolution Data */}
+          {review.status === 'Completed' && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase text-muted-foreground tracking-wider">
+                Resolution Data
+              </h3>
+              <div className="grid grid-cols-2 gap-4 rounded-lg border border-border p-4 bg-muted/20">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Review Outcome</p>
+                  <p className="text-sm font-medium">
+                    {review.rating !== null && review.rating >= 4 ? 'Positive' : 'Improvement Needed'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Review Journey</p>
+                  <p className="text-sm font-medium">
+                    {review.googleRedirected ? 'Public Review' : 'Internal Feedback'}
+                  </p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-muted-foreground mb-1">Google Redirect Status</p>
+                  <p className="text-sm font-medium font-mono">
+                    {review.googleRedirected ? 'true' : 'false'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Audit Metadata */}
           <div className="space-y-3">
             <h3 className="text-sm font-semibold uppercase text-muted-foreground tracking-wider">

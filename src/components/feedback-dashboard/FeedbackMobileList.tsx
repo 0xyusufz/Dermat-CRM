@@ -5,12 +5,13 @@ import { Star } from 'lucide-react';
 import type { DashboardReview } from './types';
 
 interface FeedbackMobileListProps {
+  mode?: 'all' | 'submitted';
   data: DashboardReview[];
   onRowClick: (review: DashboardReview) => void;
-  onResendClick: (e: React.MouseEvent, review: DashboardReview) => void;
+  onResendClick?: (e: React.MouseEvent, review: DashboardReview) => void;
 }
 
-export function FeedbackMobileList({ data, onRowClick, onResendClick }: FeedbackMobileListProps) {
+export function FeedbackMobileList({ mode = 'all', data, onRowClick, onResendClick }: FeedbackMobileListProps) {
   const displayValue = (val: string | null | undefined) => {
     if (!val || val.trim() === '') return '—';
     return val;
@@ -38,6 +39,21 @@ export function FeedbackMobileList({ data, onRowClick, onResendClick }: Feedback
     );
   };
 
+  const renderJourneyBadge = (googleRedirected: boolean) => {
+    if (googleRedirected) {
+      return (
+        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+          Public Review
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-600/20">
+        Internal Feedback
+      </span>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-3 md:hidden">
       {data.map((row) => (
@@ -48,7 +64,11 @@ export function FeedbackMobileList({ data, onRowClick, onResendClick }: Feedback
                 <p className="font-semibold">{displayValue(row.patientName)}</p>
                 <p className="text-xs text-muted-foreground">{displayValue(row.patientId)}</p>
               </div>
-              <FeedbackStatusBadge status={row.status} />
+              {mode === 'all' ? (
+                <FeedbackStatusBadge status={row.status} />
+              ) : (
+                renderJourneyBadge(row.googleRedirected)
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -67,13 +87,26 @@ export function FeedbackMobileList({ data, onRowClick, onResendClick }: Feedback
                 <span className="text-xs text-muted-foreground">Rating:</span>
                 {renderStars(row.rating)}
               </div>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-7 px-3 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition shadow-sm"
-                onClick={(e) => onResendClick(e, row)}
-              >
-                Resend Link
-              </button>
+              {mode === 'all' && onResendClick ? (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-7 px-3 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition shadow-sm"
+                  onClick={(e) => onResendClick(e, row)}
+                >
+                  Resend Link
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-7 px-3 rounded-full border border-border bg-muted/20 text-foreground hover:bg-muted/50 transition shadow-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRowClick(row);
+                  }}
+                >
+                  View Details
+                </button>
+              )}
             </div>
           </CardContent>
         </Card>

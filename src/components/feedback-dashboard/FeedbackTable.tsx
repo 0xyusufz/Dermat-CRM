@@ -5,12 +5,13 @@ import { Star } from 'lucide-react';
 import type { DashboardReview } from './types';
 
 interface FeedbackTableProps {
+  mode?: 'all' | 'submitted';
   data: DashboardReview[];
   onRowClick: (review: DashboardReview) => void;
-  onResendClick: (e: React.MouseEvent, review: DashboardReview) => void;
+  onResendClick?: (e: React.MouseEvent, review: DashboardReview) => void;
 }
 
-export function FeedbackTable({ data, onRowClick, onResendClick }: FeedbackTableProps) {
+export function FeedbackTable({ mode = 'all', data, onRowClick, onResendClick }: FeedbackTableProps) {
   const displayValue = (val: string | null | undefined) => {
     if (!val || val.trim() === '') return '—';
     return val;
@@ -38,6 +39,21 @@ export function FeedbackTable({ data, onRowClick, onResendClick }: FeedbackTable
     );
   };
 
+  const renderJourneyBadge = (googleRedirected: boolean) => {
+    if (googleRedirected) {
+      return (
+        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+          Public Review
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-600/20">
+        Internal Feedback
+      </span>
+    );
+  };
+
   return (
     <Card className="hidden md:block">
       <CardContent className="p-0">
@@ -48,7 +64,11 @@ export function FeedbackTable({ data, onRowClick, onResendClick }: FeedbackTable
                 <th className="px-6 py-4 font-medium">Patient</th>
                 <th className="px-6 py-4 font-medium">Doctor</th>
                 <th className="px-6 py-4 font-medium">Submitted Date</th>
-                <th className="px-6 py-4 font-medium">Status</th>
+                {mode === 'all' ? (
+                  <th className="px-6 py-4 font-medium">Status</th>
+                ) : (
+                  <th className="px-6 py-4 font-medium">Review Journey</th>
+                )}
                 <th className="px-6 py-4 font-medium">Rating</th>
                 <th className="px-6 py-4 font-medium">Actions</th>
               </tr>
@@ -73,19 +93,36 @@ export function FeedbackTable({ data, onRowClick, onResendClick }: FeedbackTable
                     {displayValue(row.submittedAt ? formatDate(row.submittedAt.split('T')[0]) : null)}
                   </td>
                   <td className="px-6 py-4">
-                    <FeedbackStatusBadge status={row.status} />
+                    {mode === 'all' ? (
+                      <FeedbackStatusBadge status={row.status} />
+                    ) : (
+                      renderJourneyBadge(row.googleRedirected)
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {renderStars(row.rating)}
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition shadow-sm"
-                      onClick={(e) => onResendClick(e, row)}
-                    >
-                      Resend Link
-                    </button>
+                    {mode === 'all' && onResendClick ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition shadow-sm"
+                        onClick={(e) => onResendClick(e, row)}
+                      >
+                        Resend Link
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-border bg-muted/20 text-foreground hover:bg-muted/50 transition shadow-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRowClick(row);
+                        }}
+                      >
+                        View Details
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

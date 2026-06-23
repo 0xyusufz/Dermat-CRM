@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 
 interface FeedbackFiltersProps {
+  mode?: 'all' | 'submitted';
   search: string;
   onSearchChange: (val: string) => void;
   statusFilter: string;
@@ -20,16 +21,21 @@ interface FeedbackFiltersProps {
   onDoctorFilterChange: (val: string) => void;
   timeFilter: string;
   onTimeFilterChange: (val: string) => void;
+  journeyFilter?: string;
+  onJourneyFilterChange?: (val: string) => void;
   availableDoctors: string[];
 }
 
 export function FeedbackFilters({
+  mode = 'all',
   search,
   onSearchChange,
   statusFilter,
   onStatusFilterChange,
   ratingFilter,
   onRatingFilterChange,
+  journeyFilter,
+  onJourneyFilterChange,
   doctorFilter,
   onDoctorFilterChange,
   timeFilter,
@@ -49,16 +55,31 @@ export function FeedbackFilters({
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-          <SelectTrigger className="w-full sm:w-[150px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All Statuses">All Statuses</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Completed">Completed</SelectItem>
-          </SelectContent>
-        </Select>
+        {mode === 'all' && (
+          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Statuses">All Statuses</SelectItem>
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
+        {mode === 'submitted' && onJourneyFilterChange && journeyFilter !== undefined && (
+          <Select value={journeyFilter} onValueChange={onJourneyFilterChange}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Review Journey" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Journeys">All Journeys</SelectItem>
+              <SelectItem value="Public Review">Public Review</SelectItem>
+              <SelectItem value="Internal Feedback">Internal Feedback</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         <Select value={ratingFilter} onValueChange={onRatingFilterChange}>
           <SelectTrigger className="w-full sm:w-[150px]">
@@ -71,6 +92,8 @@ export function FeedbackFilters({
             <SelectItem value="3 Stars">3 Stars</SelectItem>
             <SelectItem value="2 Stars">2 Stars</SelectItem>
             <SelectItem value="1 Star">1 Star</SelectItem>
+            <SelectItem value="4-5 Stars">4–5 Stars</SelectItem>
+            <SelectItem value="1-3 Stars">1–3 Stars</SelectItem>
           </SelectContent>
         </Select>
 
