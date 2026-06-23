@@ -1,20 +1,16 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, MessageSquare, Clock, Send } from 'lucide-react';
-import type { DashboardReview } from './types';
+import type { ReviewSummary } from './types';
 
 interface FeedbackKPICardsProps {
-  data: DashboardReview[];
+  summary?: ReviewSummary;
 }
 
-export function FeedbackKPICards({ data }: FeedbackKPICardsProps) {
-  const totalRequests = data.length;
-  const completedReviews = data.filter((r) => r.status === 'Completed').length;
-  const pendingReviews = data.filter((r) => r.status === 'Pending').length;
-
-  const validRatings = data.filter((r) => r.status === 'Completed' && r.rating !== null).map((r) => r.rating as number);
-  const avgRating = validRatings.length > 0
-    ? (validRatings.reduce((sum, rating) => sum + rating, 0) / validRatings.length).toFixed(1)
-    : '—';
+export function FeedbackKPICards({ summary }: FeedbackKPICardsProps) {
+  const totalRequests = summary?.totalReviewRequests || 0;
+  const completedReviews = summary?.reviewsSubmitted || 0;
+  const pendingReviews = summary?.pendingReviews || 0;
+  const avgRating = summary?.averageRating ? summary.averageRating.toFixed(1) : '—';
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">

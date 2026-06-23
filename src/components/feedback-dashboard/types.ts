@@ -1,21 +1,31 @@
 export type FeedbackStatus = 'Pending' | 'Completed';
 
+export interface ReviewSummary {
+  totalReviewRequests: number;
+  reviewsSubmitted: number;
+  pendingReviews: number;
+  averageRating: number;
+}
+
 export interface DashboardReview {
   feedbackId: string;
+  patientRecordId: string;
   patientId: string;
   patientName: string;
+  doctorName: string;
   phone: string;
-  doctor: string;
   visitDate: string;
   submittedAt: string | null;
-  status: FeedbackStatus;
+  submittedDate: string | null;
+  submittedTime: string | null;
+  status: 'Completed' | 'Pending';
   rating: number | null;
   reasons: string[];
-  comment: string | null;
+  comment: string;
   googleRedirected: boolean;
-  whatsappSent: boolean;
   reviewLinkOpened: boolean;
-  snapshotVersion: number;
+  whatsappSent: boolean;
+  snapshotVersion: string;
   generatedAt: string;
   searchText: string;
 }

@@ -73,7 +73,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Doctor</p>
-                <p className="text-sm font-medium">{displayValue(review.doctor)}</p>
+                <p className="text-sm font-medium">{displayValue(review.doctorName)}</p>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Submitted Date</p>
                 <p className="text-sm font-medium">
-                  {displayValue(review.submittedAt ? formatDate(review.submittedAt.split('T')[0]) : null)}
+                  {displayValue(review.submittedDate)}
                 </p>
               </div>
               <div className="col-span-2">
@@ -141,7 +141,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Review Journey</p>
                   <p className="text-sm font-medium">
-                    {review.googleRedirected ? 'Public Review' : 'Internal Feedback'}
+                    {review.rating !== null && review.rating >= 4 ? 'Public Review' : 'Internal Feedback'}
                   </p>
                 </div>
                 <div className="col-span-2">

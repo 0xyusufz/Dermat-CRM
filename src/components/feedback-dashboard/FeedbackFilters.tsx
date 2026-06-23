@@ -94,6 +94,7 @@ export function FeedbackFilters({
             <SelectItem value="1 Star">1 Star</SelectItem>
             <SelectItem value="4-5 Stars">4–5 Stars</SelectItem>
             <SelectItem value="1-3 Stars">1–3 Stars</SelectItem>
+            <SelectItem value="No Rating">No Rating</SelectItem>
           </SelectContent>
         </Select>
 

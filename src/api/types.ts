@@ -215,4 +215,6 @@ export interface DashboardData {
   missedFollowups?: MissedFollowupRecord[]
   totalCompletedFollowupSummary?: FollowupSummary
   completedFollowups?: CompletedFollowupRecord[]
+  reviewSummary?: import('@/components/feedback-dashboard/types').ReviewSummary
+  allReviews?: import('@/components/feedback-dashboard/types').DashboardReview[]
 }

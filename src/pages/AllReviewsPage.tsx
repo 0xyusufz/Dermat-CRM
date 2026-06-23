@@ -8,7 +8,8 @@ import { FeedbackMobileList } from '@/components/feedback-dashboard/FeedbackMobi
 import { ReviewDetailModal } from '@/components/feedback-dashboard/ReviewDetailModal';
 import { ResendLinkModal } from '@/components/feedback-dashboard/ResendLinkModal';
 
-import { mockReviews } from '@/mock/mockReviews';
+import { useDashboard } from '@/hooks/useDashboard';
+import { DashboardContentSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import type { DashboardReview } from '@/components/feedback-dashboard/types';
 
 export function AllReviewsPage() {
@@ -22,13 +23,15 @@ export function AllReviewsPage() {
   const [selectedReview, setSelectedReview] = useState<DashboardReview | null>(null);
   const [resendTarget, setResendTarget] = useState<DashboardReview | null>(null);
 
+  const { data, isLoading } = useDashboard();
+
   // ─── Data Derivation ───
-  // In Phase 1, using mock data directly
-  const baseDataset = mockReviews;
+  const baseDataset = data?.allReviews || [];
+  const summary = data?.reviewSummary;
   
   const availableDoctors = useMemo(() => {
-    const docs = new Set(baseDataset.map(r => r.doctor));
-    return Array.from(docs).filter(Boolean).sort();
+    const docs = new Set(baseDataset.map(r => r.doctorName));
+    return Array.from(docs).filter(Boolean).sort((a, b) => a.localeCompare(b));
   }, [baseDataset]);
 
   // ─── Filtering Logic ───
@@ -48,13 +51,21 @@ export function AllReviewsPage() {
 
     // 3. Rating
     if (ratingFilter !== 'All Ratings') {
-      const targetRating = parseInt(ratingFilter.split(' ')[0], 10);
-      result = result.filter((r) => r.rating === targetRating);
+      if (ratingFilter === 'No Rating') {
+        result = result.filter((r) => r.rating === null);
+      } else if (ratingFilter === '4-5 Stars') {
+        result = result.filter((r) => r.rating !== null && r.rating >= 4);
+      } else if (ratingFilter === '1-3 Stars') {
+        result = result.filter((r) => r.rating !== null && r.rating <= 3 && r.rating >= 1);
+      } else {
+        const targetRating = parseInt(ratingFilter.split(' ')[0], 10);
+        result = result.filter((r) => r.rating === targetRating);
+      }
     }
 
     // 4. Doctor
     if (doctorFilter !== 'All Doctors') {
-      result = result.filter((r) => r.doctor === doctorFilter);
+      result = result.filter((r) => r.doctorName === doctorFilter);
     }
 
     // 5. Time
@@ -63,14 +74,15 @@ export function AllReviewsPage() {
       today.setHours(0, 0, 0, 0);
 
       result = result.filter((r) => {
-        // Use generatedAt or submittedAt as the reference date
-        const refDateStr = r.submittedAt || r.generatedAt;
-        if (!refDateStr) return false;
+        if (!r.visitDate) return false;
         
-        const refDate = new Date(refDateStr);
-        refDate.setHours(0, 0, 0, 0);
+        const regParts = r.visitDate.split('-');
+        if (regParts.length !== 3) return false;
+        
+        const regDate = new Date(parseInt(regParts[0], 10), parseInt(regParts[1], 10) - 1, parseInt(regParts[2], 10));
+        regDate.setHours(0, 0, 0, 0);
 
-        const diffTime = today.getTime() - refDate.getTime();
+        const diffTime = today.getTime() - regDate.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
         if (timeFilter === 'Today') return diffDays === 0;
@@ -90,12 +102,32 @@ export function AllReviewsPage() {
     setResendTarget(review);
   };
 
-  const executeResend = () => {
+  const executeResend = async () => {
     if (resendTarget) {
-      console.log(`[MOCK] Resending feedback link to: ${resendTarget.patientName} (${resendTarget.phone})`);
+      try {
+        const payload = {
+          patient_record_id: resendTarget.patientRecordId,
+          patient_id: resendTarget.patientId,
+          patient_name: resendTarget.patientName,
+          doctor_name: resendTarget.doctorName,
+          phone: resendTarget.phone,
+          visit_date: resendTarget.visitDate
+        };
+        await fetch('https://n8n-latest-t6cw.onrender.com/webhook/review-link-generator', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        alert('Unable to resend review link.\nPlease try again.');
+      }
     }
     setResendTarget(null);
   };
+
+  if (isLoading) {
+    return <DashboardContentSkeleton />;
+  }
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
@@ -104,7 +136,7 @@ export function AllReviewsPage() {
         description="Track patient feedback requests, submissions, ratings, and review activity."
       />
 
-      <FeedbackKPICards data={baseDataset} />
+      <FeedbackKPICards summary={summary} />
 
       <FeedbackFilters
         search={search}

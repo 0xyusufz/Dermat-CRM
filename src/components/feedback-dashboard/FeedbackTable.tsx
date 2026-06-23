@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { formatDate } from '@/lib/utils';
 import { FeedbackStatusBadge } from './FeedbackStatusBadge';
 import { Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { DashboardReview } from './types';
 
 interface FeedbackTableProps {
@@ -12,6 +13,8 @@ interface FeedbackTableProps {
 }
 
 export function FeedbackTable({ mode = 'all', data, onRowClick, onResendClick }: FeedbackTableProps) {
+  const navigate = useNavigate();
+
   const displayValue = (val: string | null | undefined) => {
     if (!val || val.trim() === '') return '—';
     return val;
@@ -81,16 +84,27 @@ export function FeedbackTable({ mode = 'all', data, onRowClick, onResendClick }:
                   onClick={() => onRowClick(row)}
                 >
                   <td className="px-6 py-4">
-                    <div className="font-medium">{displayValue(row.patientName)}</div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!row.patientId) return;
+                        navigate(`/patients/${row.patientId}`);
+                      }}
+                      className="text-left font-medium hover:underline focus:outline-none block"
+                    >
+                      {displayValue(row.patientName)}
+                    </button>
                     <div className="text-xs text-muted-foreground leading-tight">
                       {displayValue(row.patientId)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
-                    {displayValue(row.doctor)}
+                    {displayValue(row.doctorName)}
                   </td>
-                  <td className="px-6 py-4 text-muted-foreground">
-                    {displayValue(row.submittedAt ? formatDate(row.submittedAt.split('T')[0]) : null)}
+                  <td className="px-6 py-4">
+                    <div className="text-foreground">{displayValue(row.submittedDate)}</div>
+                    <div className="text-xs text-muted-foreground">{displayValue(row.submittedTime)}</div>
                   </td>
                   <td className="px-6 py-4">
                     {mode === 'all' ? (
@@ -106,8 +120,12 @@ export function FeedbackTable({ mode = 'all', data, onRowClick, onResendClick }:
                     {mode === 'all' && onResendClick ? (
                       <button
                         type="button"
+                        disabled={!row.patientRecordId}
                         className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition shadow-sm"
-                        onClick={(e) => onResendClick(e, row)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onResendClick) onResendClick(e, row);
+                        }}
                       >
                         Resend Link
                       </button>

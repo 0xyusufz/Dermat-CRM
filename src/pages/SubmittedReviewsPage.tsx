@@ -7,7 +7,8 @@ import { FeedbackTable } from '@/components/feedback-dashboard/FeedbackTable';
 import { FeedbackMobileList } from '@/components/feedback-dashboard/FeedbackMobileList';
 import { ReviewDetailModal } from '@/components/feedback-dashboard/ReviewDetailModal';
 
-import { mockReviews } from '@/mock/mockReviews';
+import { useDashboard } from '@/hooks/useDashboard';
+import { DashboardContentSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import type { DashboardReview } from '@/components/feedback-dashboard/types';
 
 export function SubmittedReviewsPage() {
@@ -20,15 +21,17 @@ export function SubmittedReviewsPage() {
 
   const [selectedReview, setSelectedReview] = useState<DashboardReview | null>(null);
 
+  const { data, isLoading } = useDashboard();
+
   // ─── Data Derivation ───
   // Hard ceiling: Only ever process Completed reviews
   const baseDataset = useMemo(() => {
-    return mockReviews.filter((r) => r.status === 'Completed');
-  }, []);
+    return (data?.allReviews || []).filter((r) => r.status === 'Completed');
+  }, [data?.allReviews]);
   
   const availableDoctors = useMemo(() => {
-    const docs = new Set(baseDataset.map(r => r.doctor));
-    return Array.from(docs).filter(Boolean).sort();
+    const docs = new Set(baseDataset.map(r => r.doctorName));
+    return Array.from(docs).filter(Boolean).sort((a, b) => a.localeCompare(b));
   }, [baseDataset]);
 
   // ─── Filtering Logic ───
@@ -43,7 +46,9 @@ export function SubmittedReviewsPage() {
 
     // 2. Rating
     if (ratingFilter !== 'All Ratings') {
-      if (ratingFilter === '4-5 Stars') {
+      if (ratingFilter === 'No Rating') {
+        result = result.filter((r) => r.rating === null);
+      } else if (ratingFilter === '4-5 Stars') {
         result = result.filter((r) => r.rating !== null && r.rating >= 4);
       } else if (ratingFilter === '1-3 Stars') {
         result = result.filter((r) => r.rating !== null && r.rating >= 1 && r.rating <= 3);
@@ -64,7 +69,7 @@ export function SubmittedReviewsPage() {
 
     // 4. Doctor
     if (doctorFilter !== 'All Doctors') {
-      result = result.filter((r) => r.doctor === doctorFilter);
+      result = result.filter((r) => r.doctorName === doctorFilter);
     }
 
     // 5. Time
@@ -73,13 +78,15 @@ export function SubmittedReviewsPage() {
       today.setHours(0, 0, 0, 0);
 
       result = result.filter((r) => {
-        const refDateStr = r.submittedAt || r.generatedAt;
-        if (!refDateStr) return false;
+        if (!r.visitDate) return false;
         
-        const refDate = new Date(refDateStr);
-        refDate.setHours(0, 0, 0, 0);
+        const regParts = r.visitDate.split('-');
+        if (regParts.length !== 3) return false;
+        
+        const regDate = new Date(parseInt(regParts[0], 10), parseInt(regParts[1], 10) - 1, parseInt(regParts[2], 10));
+        regDate.setHours(0, 0, 0, 0);
 
-        const diffTime = today.getTime() - refDate.getTime();
+        const diffTime = today.getTime() - regDate.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
         if (timeFilter === 'Today') return diffDays === 0;
@@ -92,6 +99,10 @@ export function SubmittedReviewsPage() {
 
     return result;
   }, [baseDataset, search, ratingFilter, journeyFilter, doctorFilter, timeFilter]);
+
+  if (isLoading) {
+    return <DashboardContentSkeleton />;
+  }
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">

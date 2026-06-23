@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { formatDate } from '@/lib/utils';
 import { FeedbackStatusBadge } from './FeedbackStatusBadge';
 import { Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { DashboardReview } from './types';
 
 interface FeedbackMobileListProps {
@@ -12,6 +13,8 @@ interface FeedbackMobileListProps {
 }
 
 export function FeedbackMobileList({ mode = 'all', data, onRowClick, onResendClick }: FeedbackMobileListProps) {
+  const navigate = useNavigate();
+
   const displayValue = (val: string | null | undefined) => {
     if (!val || val.trim() === '') return '—';
     return val;
@@ -61,7 +64,17 @@ export function FeedbackMobileList({ mode = 'all', data, onRowClick, onResendCli
           <CardContent className="p-4 space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <p className="font-semibold">{displayValue(row.patientName)}</p>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!row.patientId) return;
+                    navigate(`/patients/${row.patientId}`);
+                  }}
+                  className="font-semibold text-left hover:underline focus:outline-none block"
+                >
+                  {displayValue(row.patientName)}
+                </button>
                 <p className="text-xs text-muted-foreground">{displayValue(row.patientId)}</p>
               </div>
               {mode === 'all' ? (
@@ -74,11 +87,12 @@ export function FeedbackMobileList({ mode = 'all', data, onRowClick, onResendCli
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <p className="text-xs text-muted-foreground">Doctor</p>
-                <p>{displayValue(row.doctor)}</p>
+                <p>{displayValue(row.doctorName)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Submitted</p>
-                <p>{displayValue(row.submittedAt ? formatDate(row.submittedAt.split('T')[0]) : null)}</p>
+                <p className="text-foreground">{displayValue(row.submittedDate)}</p>
+                <p className="text-xs text-muted-foreground">{displayValue(row.submittedTime)}</p>
               </div>
             </div>
 
@@ -90,8 +104,12 @@ export function FeedbackMobileList({ mode = 'all', data, onRowClick, onResendCli
               {mode === 'all' && onResendClick ? (
                 <button
                   type="button"
+                  disabled={!row.patientRecordId}
                   className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-7 px-3 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition shadow-sm"
-                  onClick={(e) => onResendClick(e, row)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onResendClick(e, row);
+                  }}
                 >
                   Resend Link
                 </button>
