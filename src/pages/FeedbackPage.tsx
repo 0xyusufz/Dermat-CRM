@@ -90,9 +90,7 @@ export function FeedbackPage() {
       rating,
       reason: [],
       comment: '',
-    }).catch(() => {
-      // Silently fail — redirect proceeds regardless
-    })
+    }).catch(() => {});
   }, [showRedirectModal, token, rating])
 
   // ─── Rating change handler ───
