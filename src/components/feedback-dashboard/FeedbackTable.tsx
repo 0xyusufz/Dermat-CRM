@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { formatDate } from '@/lib/utils';
 import { FeedbackStatusBadge } from './FeedbackStatusBadge';
 import { Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
