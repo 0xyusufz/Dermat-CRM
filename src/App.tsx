@@ -15,6 +15,8 @@ import { PrescriptionsPage } from '@/pages/PrescriptionsPage'
 import { RegistrationPage } from '@/pages/RegistrationPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { FeedbackPage } from '@/pages/FeedbackPage'
+import { AllReviewsPage } from '@/pages/AllReviewsPage'
+import { SubmittedReviewsPage } from '@/pages/SubmittedReviewsPage'
 
 export default function App() {
   return (
@@ -53,6 +55,8 @@ export default function App() {
                 <Route path="follow-ups/missed" element={<FollowUpsPage filter="missed" />} />
                 <Route path="follow-ups/completed" element={<FollowUpsPage filter="completed" />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="feedback/reviews" element={<AllReviewsPage />} />
+                <Route path="feedback/submitted" element={<SubmittedReviewsPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Route>

@@ -11,6 +11,7 @@ import {
   Stethoscope,
   UserPlus,
   Users,
+  Star,
 } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
@@ -61,6 +62,14 @@ const navItems: NavItem[] = [
       { label: 'Completed', path: '/follow-ups/completed' },
     ],
   },
+  {
+    label: 'Feedback',
+    icon: Star,
+    children: [
+      { label: 'All Reviews', path: '/feedback/reviews' },
+      { label: 'Submitted Reviews', path: '/feedback/submitted' },
+    ],
+  },
   { label: 'Analytics', icon: BarChart3, path: '/analytics' },
   { label: 'Settings', icon: Settings, path: '/settings' },
 ]
@@ -79,6 +88,7 @@ export function Sidebar({ collapsed, mobileOpen, onToggle, onMobileClose }: Side
     Patients: true,
     Medicine: true,
     'Follow-Up': true,
+    Feedback: true,
   })
 
   const toggleExpand = (label: string) => {

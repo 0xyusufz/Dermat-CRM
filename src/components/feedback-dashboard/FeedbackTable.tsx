@@ -1,0 +1,98 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { formatDate } from '@/lib/utils';
+import { FeedbackStatusBadge } from './FeedbackStatusBadge';
+import { Star } from 'lucide-react';
+import type { DashboardReview } from './types';
+
+interface FeedbackTableProps {
+  data: DashboardReview[];
+  onRowClick: (review: DashboardReview) => void;
+  onResendClick: (e: React.MouseEvent, review: DashboardReview) => void;
+}
+
+export function FeedbackTable({ data, onRowClick, onResendClick }: FeedbackTableProps) {
+  const displayValue = (val: string | null | undefined) => {
+    if (!val || val.trim() === '') return '—';
+    return val;
+  };
+
+  const renderStars = (rating: number | null) => {
+    if (rating === null) {
+      return (
+        <div className="flex">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Star key={i} className="h-4 w-4 text-muted-foreground/30" />
+          ))}
+        </div>
+      );
+    }
+    return (
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Star
+            key={i}
+            className={`h-4 w-4 ${i <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'}`}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <Card className="hidden md:block">
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/30 text-left text-muted-foreground">
+                <th className="px-6 py-4 font-medium">Patient</th>
+                <th className="px-6 py-4 font-medium">Doctor</th>
+                <th className="px-6 py-4 font-medium">Submitted Date</th>
+                <th className="px-6 py-4 font-medium">Status</th>
+                <th className="px-6 py-4 font-medium">Rating</th>
+                <th className="px-6 py-4 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row) => (
+                <tr
+                  key={row.feedbackId}
+                  className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors cursor-pointer"
+                  onClick={() => onRowClick(row)}
+                >
+                  <td className="px-6 py-4">
+                    <div className="font-medium">{displayValue(row.patientName)}</div>
+                    <div className="text-xs text-muted-foreground leading-tight">
+                      {displayValue(row.patientId)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {displayValue(row.doctor)}
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {displayValue(row.submittedAt ? formatDate(row.submittedAt.split('T')[0]) : null)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <FeedbackStatusBadge status={row.status} />
+                  </td>
+                  <td className="px-6 py-4">
+                    {renderStars(row.rating)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center whitespace-nowrap text-xs font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 px-3 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition shadow-sm"
+                      onClick={(e) => onResendClick(e, row)}
+                    >
+                      Resend Link
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
