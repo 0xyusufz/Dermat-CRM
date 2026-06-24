@@ -1,5 +1,5 @@
 import { Pill, Search } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PrescriptionStatusBadge } from '@/components/shared/StatusBadge'
@@ -39,6 +39,62 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
     : data?.totalActivePrescriptionSummary?.totalActivePrescriptions
   
   const featuredCards = completed ? data?.featuredPrescriptions : data?.allFeaturedPrescriptions
+
+  // Global Keyboard Workflow
+  useEffect(() => {
+    if (window.innerWidth < 768) return
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const hasOpenModals = document.querySelector('[role="dialog"], [role="menu"]') !== null
+      const activeElement = document.activeElement as HTMLElement | null
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.tagName === 'SELECT' ||
+        activeElement.isContentEditable ||
+        activeElement.getAttribute('role') === 'combobox'
+      )
+
+      // Feature 3, 4, 5 — Universal Escape
+      if (e.key === 'Escape') {
+        if (activeElement && activeElement !== document.body) {
+          activeElement.blur()
+        }
+        return
+      }
+
+      // Feature 1, 8 — CMD+K / CTRL+K
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        if (hasOpenModals) return
+        e.preventDefault()
+        const globalSearch = document.getElementById('global-patient-search-input') as HTMLInputElement | null
+        if (globalSearch) {
+          globalSearch.focus()
+          setTimeout(() => globalSearch.select(), 0)
+        }
+        return
+      }
+
+      // Feature 2, 6 — Auto-Type into Page Search
+      if (!isInputFocused && !hasOpenModals) {
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && /[a-zA-Z0-9]/.test(e.key)) {
+          e.preventDefault()
+          const pageSearch = document.getElementById('prescriptions-search-input') as HTMLInputElement | null
+          if (pageSearch) {
+            pageSearch.focus()
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(pageSearch, pageSearch.value + e.key)
+              pageSearch.dispatchEvent(new Event('input', { bubbles: true }))
+            }
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [])
 
   const filteredRows = useMemo(() => {
     if (!baseDataset) return []
@@ -118,10 +174,12 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              id="prescriptions-search-input"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search prescription ID, patient, medicine, doctor, or phone..."
               className="pl-10"
+              autoComplete="off"
             />
           </div>
           <Select value={doctorFilter} onValueChange={setDoctorFilter}>
