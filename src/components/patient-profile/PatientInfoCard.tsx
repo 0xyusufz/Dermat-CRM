@@ -39,11 +39,11 @@ export function PatientInfoCard({ overview }: PatientInfoCardProps) {
             {/* Group B: Contact */}
             <div className="rounded-lg border border-border/50 bg-muted/10 p-3 flex flex-col items-center justify-center text-center gap-1">
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">WhatsApp Number</span>
-              <span className="text-[15px] font-semibold truncate w-full">{patient.whatsapp}</span>
+              <span className="text-[13px] sm:text-[15px] font-semibold whitespace-nowrap">{patient.whatsapp}</span>
             </div>
             <div className="rounded-lg border border-border/50 bg-muted/10 p-3 flex flex-col items-center justify-center text-center gap-1">
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Doctor</span>
-              <span className="text-[15px] font-semibold truncate w-full">{doctorName}</span>
+              <span className="text-[14px] sm:text-[15px] font-semibold text-center leading-tight">{doctorName}</span>
             </div>
 
             {/* Group C: Personal */}
@@ -59,11 +59,11 @@ export function PatientInfoCard({ overview }: PatientInfoCardProps) {
             {/* Group D: Timeline */}
             <div className="rounded-lg border border-border/50 bg-muted/10 p-3 flex flex-col items-center justify-center text-center gap-1">
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Registered</span>
-              <span className="text-[15px] font-semibold">{formatDate(patient.registrationDate)}</span>
+              <span className="text-[14px] sm:text-[15px] font-semibold leading-tight">{formatDate(patient.registrationDate)}</span>
             </div>
             <div className="rounded-lg border border-border/50 bg-muted/10 p-3 flex flex-col items-center justify-center text-center gap-1">
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Last Visit</span>
-              <span className="text-[15px] font-semibold">{overview.lastVisitDate ? formatDate(overview.lastVisitDate) : '—'}</span>
+              <span className="text-[14px] sm:text-[15px] font-semibold leading-tight">{overview.lastVisitDate ? formatDate(overview.lastVisitDate) : '—'}</span>
             </div>
           </div>
         </div>

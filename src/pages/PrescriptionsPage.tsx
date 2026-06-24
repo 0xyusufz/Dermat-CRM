@@ -159,7 +159,7 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
       ) : (
         <Card>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30 text-left text-muted-foreground">
@@ -207,6 +207,71 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* --- MOBILE VIEW --- */}
+            <div className="md:hidden p-4 space-y-4">
+              {filteredRows.map((rx) => (
+                <div key={rx.prescriptionId} className="rounded-2xl border border-border/50 bg-card shadow-sm p-4 flex flex-col gap-4">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1 flex flex-col">
+                      <span className="text-lg font-semibold text-foreground whitespace-normal break-words leading-tight">{displayValue(rx.medicine)}</span>
+                      <span className="text-sm text-muted-foreground mt-1">
+                        {displayValue(rx.dosage)} • {displayValue(rx.frequency)}
+                      </span>
+                    </div>
+                    <div className="shrink-0">
+                      <PrescriptionStatusBadge status={normalizeStatus(rx.status) as PrescriptionStatus} />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border/50" />
+
+                  {/* Details */}
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Patient</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!rx.patientId) return
+                          navigate(`/patients/${rx.patientId}`)
+                        }}
+                        className="text-sm font-medium text-foreground text-left whitespace-normal break-words hover:underline focus:outline-none"
+                      >
+                        {displayValue(rx.patientName)}
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Doctor</span>
+                      <span className="text-sm font-medium text-foreground whitespace-normal break-words">{displayValue(rx.doctor)}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Start Date</span>
+                      <span className="text-sm font-medium text-foreground">{displayValue(rx.startDate && formatDate(rx.startDate))}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">End Date</span>
+                      <span className="text-sm font-medium text-foreground">{displayValue(rx.endDate && formatDate(rx.endDate))}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
+                      onClick={() => {
+                        if (!rx.patientId) return
+                        navigate(`/patients/${rx.patientId}`)
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

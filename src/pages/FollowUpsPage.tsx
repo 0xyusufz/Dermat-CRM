@@ -157,7 +157,7 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
       ) : (
         <Card>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30 text-left text-muted-foreground">
@@ -248,6 +248,131 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* --- MOBILE VIEW --- */}
+            <div className="md:hidden p-4 space-y-4">
+              {rows.map((row, idx) => {
+                const rDate = row.date || row.followupDate
+                const rTime = row.time || row.followupTime
+                
+                return (
+                  <div key={row.followupId || idx} className="rounded-2xl border border-border/50 bg-card shadow-sm p-4 flex flex-col gap-4">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!row.patientId) return
+                            navigate(`/patients/${row.patientId}`)
+                          }}
+                          className="text-lg font-semibold text-foreground text-left whitespace-normal break-words hover:underline focus:outline-none leading-tight"
+                        >
+                          {displayValue(row.patientName)}
+                        </button>
+                        <p className="text-sm text-muted-foreground mt-1">{displayValue(row.patientId)}</p>
+                      </div>
+                      <div className="shrink-0">
+                        <FollowUpStatusBadge status={row.status as FollowUpStatus} />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-border/50" />
+
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Doctor</span>
+                        <span className="text-sm font-medium text-foreground whitespace-normal break-words">{displayValue(row.doctor)}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Date</span>
+                        <span className="text-sm font-medium text-foreground">{displayValue(rDate ? formatDate(rDate) : '')}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Time</span>
+                        <span className="text-sm font-medium text-foreground">{displayValue(rTime)}</span>
+                      </div>
+                      {showReschedules && (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reschedules</span>
+                          <span className="text-sm font-medium text-foreground">{formatRescheduleCount(row.rescheduleCount)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-1">
+                      {filter === 'upcoming' && showRescheduleButton && showCompleteButton && (
+                        <div className="flex gap-3">
+                          <button
+                            type="button"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
+                            onClick={() => setRescheduleTarget(row)}
+                            disabled={row.status === 'Completed'}
+                          >
+                            Reschedule
+                          </button>
+                          <button
+                            type="button"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+                            onClick={() => setCompleteTarget(row)}
+                            disabled={row.status === 'Completed'}
+                          >
+                            Mark Completed
+                          </button>
+                        </div>
+                      )}
+                      
+                      {filter === 'missed' && showRescheduleButton && (
+                        <button
+                          type="button"
+                          className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
+                          onClick={() => setRescheduleTarget(row)}
+                          disabled={row.status === 'Completed'}
+                        >
+                          Reschedule
+                        </button>
+                      )}
+
+                      {filter === 'completed' && (
+                        <button
+                          type="button"
+                          className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
+                          onClick={() => {
+                            if (!row.patientId) return
+                            navigate(`/patients/${row.patientId}`)
+                          }}
+                        >
+                          View Details
+                        </button>
+                      )}
+                      
+                      {filter === 'today' && (
+                        <div className="flex flex-col gap-3">
+                          <button
+                            type="button"
+                            className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+                            onClick={() => setCompleteTarget(row)}
+                            disabled={row.status === 'Completed'}
+                          >
+                            Mark Completed
+                          </button>
+                          <button
+                            type="button"
+                            className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
+                            onClick={() => setRescheduleTarget(row)}
+                            disabled={row.status === 'Completed'}
+                          >
+                            Reschedule
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </CardContent>
         </Card>
