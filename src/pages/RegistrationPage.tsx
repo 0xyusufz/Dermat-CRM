@@ -1,5 +1,6 @@
 import { UserPlus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { WorkflowModal } from '@/components/workflow/WorkflowModal'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TransactionResultCard } from '@/components/shared/TransactionResultCard'
@@ -36,6 +37,9 @@ export function RegistrationPage() {
     lastPatientCode,
   } = useRegistration()
 
+  const [genderOpen, setGenderOpen] = useState(false)
+  const [doctorOpen, setDoctorOpen] = useState(false)
+
   const allDoctorNames = ['Rizwana Barkat', 'Muzammil Barkat']
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,6 +47,51 @@ export function RegistrationPage() {
     setTouchedAll()
     submit()
   }
+
+  useEffect(() => {
+    if (window.innerWidth < 768) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const hasOpenModals = document.querySelector('[role="dialog"], [role="menu"]') !== null
+      const activeElement = document.activeElement as HTMLElement | null
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.tagName === 'SELECT' ||
+        activeElement.isContentEditable ||
+        activeElement.getAttribute('role') === 'combobox'
+      )
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        if (hasOpenModals) return
+        e.preventDefault()
+        const searchInput = document.getElementById('global-patient-search-input') as HTMLInputElement | null
+        if (searchInput) {
+          searchInput.focus()
+          setTimeout(() => searchInput.select(), 0)
+        }
+        return
+      }
+
+      if (!isInputFocused && !hasOpenModals && !genderOpen && !doctorOpen) {
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && /[a-zA-Z0-9]/.test(e.key)) {
+          e.preventDefault()
+          const fullNameInput = document.getElementById('fullName') as HTMLInputElement | null
+          if (fullNameInput) {
+            fullNameInput.focus()
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(fullNameInput, fullNameInput.value + e.key)
+              fullNameInput.dispatchEvent(new Event('input', { bubbles: true }))
+            }
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [genderOpen, doctorOpen])
 
   if (success) {
     return (
@@ -110,6 +159,12 @@ export function RegistrationPage() {
                 value={form.fullName}
                 onChange={(e) => updateField('fullName', e.target.value)}
                 onBlur={() => markTouched('fullName')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    document.getElementById('age')?.focus()
+                  }
+                }}
                 error={!!errors.fullName}
                 placeholder="Enter patient's full name"
                 className="mt-1.5"
@@ -125,6 +180,12 @@ export function RegistrationPage() {
                 value={form.age}
                 onChange={(e) => updateField('age', e.target.value)}
                 onBlur={() => markTouched('age')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    setGenderOpen(true)
+                  }
+                }}
                 error={!!errors.age}
                 placeholder="Age"
                 className="mt-1.5"
@@ -135,14 +196,21 @@ export function RegistrationPage() {
             <div>
               <Label>Gender</Label>
               <Select
+                open={genderOpen}
+                onOpenChange={setGenderOpen}
                 value={form.gender}
-                onValueChange={(v) => updateField('gender', v)}
+                onValueChange={(v) => {
+                  updateField('gender', v)
+                }}
                 disabled={isRunning}
               >
                 <SelectTrigger className={cn('mt-1.5', errors.gender && 'border-danger')}>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent onCloseAutoFocus={(e) => {
+                  e.preventDefault()
+                  document.getElementById('whatsapp')?.focus()
+                }}>
                   <SelectItem value="Male">Male</SelectItem>
                   <SelectItem value="Female">Female</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
@@ -163,8 +231,17 @@ export function RegistrationPage() {
               <Input
                 id="whatsapp"
                 value={form.whatsapp}
-                onChange={(e) => updateField('whatsapp', e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10)
+                  updateField('whatsapp', val)
+                }}
                 onBlur={() => markTouched('whatsapp')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    setDoctorOpen(true)
+                  }
+                }}
                 error={!!errors.whatsapp}
                 placeholder="10-digit number"
                 className="mt-1.5"
@@ -175,14 +252,21 @@ export function RegistrationPage() {
             <div>
               <Label>Assigned Doctor</Label>
               <Select
+                open={doctorOpen}
+                onOpenChange={setDoctorOpen}
                 value={form.doctorName}
-                onValueChange={(v) => updateField('doctorName', v)}
+                onValueChange={(v) => {
+                  updateField('doctorName', v)
+                }}
                 disabled={isRunning}
               >
                 <SelectTrigger className={cn('mt-1.5', errors.doctorName && 'border-danger')}>
                   <SelectValue placeholder="Select doctor" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent onCloseAutoFocus={(e) => {
+                  e.preventDefault()
+                  document.getElementById('address')?.focus()
+                }}>
                   {allDoctorNames.map((name) => (
                     <SelectItem key={name} value={name}>{name}</SelectItem>
                   ))}
@@ -199,6 +283,12 @@ export function RegistrationPage() {
                 value={form.address}
                 onChange={(e) => updateField('address', e.target.value)}
                 onBlur={() => markTouched('address')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    document.getElementById('registerBtn')?.focus()
+                  }
+                }}
                 error={!!errors.address}
                 placeholder="Full address"
                 className="mt-1.5"
@@ -212,6 +302,7 @@ export function RegistrationPage() {
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" disabled={isRunning}>Cancel</Button>
           <Button
+            id="registerBtn"
             type="submit"
             variant="gradient"
             size="lg"
