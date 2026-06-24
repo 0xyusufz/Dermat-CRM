@@ -65,7 +65,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 max-h-[420px] overflow-y-auto hide-scrollbar md:max-h-none md:overflow-visible pr-1 md:pr-0">
       {activities.map((activity, index) => {
         const config = getActivityIcon(activity.type, activity.title)
         const Icon = config.icon

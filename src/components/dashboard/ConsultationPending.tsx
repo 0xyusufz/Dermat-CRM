@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { ConsultationPendingItem } from '@/api/types'
+import { Stethoscope } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate, formatDateCompact } from '@/lib/utils'
@@ -92,10 +93,10 @@ export function ConsultationPending({ patients }: ConsultationPendingProps) {
               
               <Button
                 variant="gradient"
-                size="sm"
-                className="w-full h-8 text-xs font-medium shadow-sm"
+                className="w-full h-[42px] rounded-full text-sm font-medium shadow-md hover:shadow-lg hover:brightness-105 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
                 onClick={() => navigate(`/consultation/${patient.patientId}`)}
               >
+                <Stethoscope className="h-4 w-4" />
                 Start Consultation
               </Button>
             </div>
