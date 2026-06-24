@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Search, Stethoscope, UserPlus } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { ConsultationPending } from '@/components/dashboard/ConsultationPending'
 import {
@@ -12,7 +12,7 @@ import { RecentRegistrations } from '@/components/dashboard/RecentRegistrations'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { TodayFollowups } from '@/components/dashboard/TodayFollowups'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useDashboard } from '@/hooks/useDashboard'
 import { CompleteFollowUpModal } from '@/components/patient-profile/modals/CompleteFollowUpModal'
@@ -49,6 +49,7 @@ const quickActions = [
 ]
 
 export function DashboardPage() {
+  const navigate = useNavigate()
   const { data, isLoading, isError, refetch, isFetching } = useDashboard()
 
   const [completeTarget, setCompleteTarget] = useState<TodayFollowupItem | null>(null)
@@ -57,7 +58,66 @@ export function DashboardPage() {
   const completeHook = useCompleteFollowUp()
   const rescheduleHook = useRescheduleFollowUp()
 
-  // Removed redundant refetch effect. The polling engine already syncs data.
+  useEffect(() => {
+    // Only apply on desktop (>= md breakpoint which is 768px in Tailwind)
+    if (window.innerWidth < 768) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if a modal, dropdown, or popover is open
+      // Radix typically uses role="dialog" or role="menu" or adds data-state="open" to portals
+      const hasOpenModals = document.querySelector('[role="dialog"], [role="menu"]') !== null
+      
+      const activeElement = document.activeElement as HTMLElement | null
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.tagName === 'SELECT' ||
+        activeElement.isContentEditable
+      )
+
+      // 1. CMD + K / CTRL + K
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        if (hasOpenModals) return
+        e.preventDefault()
+        const searchInput = document.getElementById('global-patient-search-input') as HTMLInputElement | null
+        if (searchInput) {
+          searchInput.focus()
+          setTimeout(() => searchInput.select(), 0)
+        }
+        return
+      }
+
+      // 2. Enter to open Quick Action
+      if (e.key === 'Enter') {
+        if (!isInputFocused && !hasOpenModals) {
+          e.preventDefault()
+          navigate('/registration')
+        }
+        return
+      }
+
+      // 3. Auto-focus global search on typing
+      if (!isInputFocused && !hasOpenModals) {
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && /[a-zA-Z0-9]/.test(e.key)) {
+          const searchInput = document.getElementById('global-patient-search-input') as HTMLInputElement | null
+          if (searchInput) {
+            e.preventDefault() // Prevent default so it doesn't double-type if we manually dispatch
+            searchInput.focus()
+            
+            // In React, programmatically changing input value and triggering onChange
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(searchInput, searchInput.value + e.key)
+              searchInput.dispatchEvent(new Event('input', { bubbles: true }))
+            }
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
 
   const mapToRecord = (item: TodayFollowupItem): PatientFollowUpRecord => ({
     id: item.followupId ?? '',

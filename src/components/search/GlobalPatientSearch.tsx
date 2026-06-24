@@ -122,6 +122,7 @@ export function GlobalPatientSearch({
       >
         <Search className="absolute left-4 h-4 w-4 text-muted-foreground" />
         <Input
+          id="global-patient-search-input"
           ref={inputRef}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
