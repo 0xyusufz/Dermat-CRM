@@ -258,16 +258,16 @@ export function PrescriptionsPage({ completed = false }: PrescriptionsPageProps)
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-1">
+                  <div className="pt-1 flex justify-end">
                     <button
                       type="button"
-                      className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
+                      className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors focus-visible:outline-none"
                       onClick={() => {
                         if (!rx.patientId) return
                         navigate(`/patients/${rx.patientId}`)
                       }}
                     >
-                      View Details
+                      View Details <span className="ml-1">→</span>
                     </button>
                   </div>
                 </div>

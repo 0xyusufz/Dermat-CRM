@@ -124,22 +124,22 @@ export function TodayFollowups({ followups, onComplete, onReschedule }: TodayFol
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 pt-1">
+              <div className="flex gap-3 pt-1">
                 <button
                   type="button"
-                  className="w-full inline-flex items-center justify-center whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 text-xs rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm"
-                  onClick={() => onComplete?.(fu)}
-                  disabled={fu.status === 'Completed'}
-                >
-                  ✓ Complete
-                </button>
-                <button
-                  type="button"
-                  className="w-full inline-flex items-center justify-center whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-8 text-xs rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
+                  className="flex-1 inline-flex items-center justify-center whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 text-xs rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
                   onClick={() => onReschedule?.(fu)}
                   disabled={fu.status === 'Completed'}
                 >
                   ↻ Reschedule
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 inline-flex items-center justify-center whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 text-xs rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm"
+                  onClick={() => onComplete?.(fu)}
+                  disabled={fu.status === 'Completed'}
+                >
+                  ✓ Complete
                 </button>
               </div>
             </div>

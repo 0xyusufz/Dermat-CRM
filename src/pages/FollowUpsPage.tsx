@@ -303,12 +303,12 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-1">
+                    <div className="pt-0">
                       {filter === 'upcoming' && showRescheduleButton && showCompleteButton && (
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 mt-1">
                           <button
                             type="button"
-                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-4 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
                             onClick={() => setRescheduleTarget(row)}
                             disabled={row.status === 'Completed'}
                           >
@@ -316,7 +316,7 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                           </button>
                           <button
                             type="button"
-                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm"
                             onClick={() => setCompleteTarget(row)}
                             disabled={row.status === 'Completed'}
                           >
@@ -326,46 +326,50 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                       )}
                       
                       {filter === 'missed' && showRescheduleButton && (
-                        <button
-                          type="button"
-                          className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
-                          onClick={() => setRescheduleTarget(row)}
-                          disabled={row.status === 'Completed'}
-                        >
-                          Reschedule
-                        </button>
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="button"
+                            className="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-700 transition-colors focus-visible:outline-none"
+                            onClick={() => setRescheduleTarget(row)}
+                            disabled={row.status === 'Completed'}
+                          >
+                            Reschedule <span className="ml-1">→</span>
+                          </button>
+                        </div>
                       )}
 
                       {filter === 'completed' && (
-                        <button
-                          type="button"
-                          className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
-                          onClick={() => {
-                            if (!row.patientId) return
-                            navigate(`/patients/${row.patientId}`)
-                          }}
-                        >
-                          View Details
-                        </button>
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="button"
+                            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors focus-visible:outline-none"
+                            onClick={() => {
+                              if (!row.patientId) return
+                              navigate(`/patients/${row.patientId}`)
+                            }}
+                          >
+                            View Details <span className="ml-1">→</span>
+                          </button>
+                        </div>
                       )}
                       
                       {filter === 'today' && (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex gap-3 mt-1">
                           <button
                             type="button"
-                            className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm"
-                            onClick={() => setCompleteTarget(row)}
-                            disabled={row.status === 'Completed'}
-                          >
-                            Mark Completed
-                          </button>
-                          <button
-                            type="button"
-                            className="w-full inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-11 px-4 rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground transition shadow-sm"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-4 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
                             onClick={() => setRescheduleTarget(row)}
                             disabled={row.status === 'Completed'}
                           >
                             Reschedule
+                          </button>
+                          <button
+                            type="button"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-4 rounded-xl border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm"
+                            onClick={() => setCompleteTarget(row)}
+                            disabled={row.status === 'Completed'}
+                          >
+                            Complete
                           </button>
                         </div>
                       )}
