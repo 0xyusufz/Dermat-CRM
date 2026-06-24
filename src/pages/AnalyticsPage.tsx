@@ -22,7 +22,7 @@ export function AnalyticsPage() {
         description="Clinic performance metrics and insights."
       />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {[
           { icon: Users, label: 'Total Patients', value: stats.totalPatients },
           { icon: TrendingUp, label: 'Active Treatments', value: stats.activePatients },

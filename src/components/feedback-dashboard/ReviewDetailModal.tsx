@@ -62,19 +62,19 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
             <div className="grid grid-cols-2 gap-4 rounded-lg border border-border p-4 bg-muted/20">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Patient Name</p>
-                <p className="text-sm font-medium">{displayValue(review.patientName)}</p>
+                <p className="text-sm font-medium break-words whitespace-pre-wrap">{displayValue(review.patientName)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Patient ID</p>
-                <p className="text-sm font-medium">{displayValue(review.patientId)}</p>
+                <p className="text-sm font-medium break-words whitespace-pre-wrap">{displayValue(review.patientId)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Phone</p>
-                <p className="text-sm font-medium">{displayValue(review.phone)}</p>
+                <p className="text-sm font-medium break-words whitespace-pre-wrap">{displayValue(review.phone)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Doctor</p>
-                <p className="text-sm font-medium">{displayValue(review.doctorName)}</p>
+                <p className="text-sm font-medium break-words whitespace-pre-wrap">{displayValue(review.doctorName)}</p>
               </div>
             </div>
           </div>
@@ -106,7 +106,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
                 <div className="flex flex-wrap gap-2 mt-1">
                   {review.reasons && review.reasons.length > 0 ? (
                     review.reasons.map((r, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
+                      <span key={idx} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md break-words whitespace-pre-wrap">
                         {r}
                       </span>
                     ))
@@ -117,7 +117,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
               </div>
               <div className="col-span-2">
                 <p className="text-xs text-muted-foreground mb-1">Comment</p>
-                <p className="text-sm font-medium whitespace-pre-wrap">
+                <p className="text-sm font-medium break-words whitespace-pre-wrap">
                   {displayValue(review.comment)}
                 </p>
               </div>
@@ -161,7 +161,7 @@ export function ReviewDetailModal({ open, onOpenChange, review }: ReviewDetailMo
             <div className="grid grid-cols-2 gap-4 rounded-lg border border-border p-4 bg-muted/20">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Feedback ID</p>
-                <p className="text-sm font-medium">{displayValue(review.feedbackId)}</p>
+                <p className="text-sm font-medium break-words whitespace-pre-wrap">{displayValue(review.feedbackId)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Snapshot Version</p>

@@ -68,20 +68,20 @@ export function KpiCard({ label, value, trend, sparkline, icon, iconBg, delay = 
         }
       }}
       className={cn(
-        'rounded-2xl border border-border bg-card p-5 card-shadow transition-shadow hover:shadow-lg',
+        'rounded-2xl border border-border bg-card p-3 card-shadow transition-shadow hover:shadow-lg md:p-5',
         onClick && 'cursor-pointer'
       )}
     >
       <div className="flex items-start justify-between">
-        <div className={cn('flex h-11 w-11 items-center justify-center rounded-xl', iconBg)}>
+        <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl md:h-11 md:w-11', iconBg)}>
           {icon}
         </div>
-        <Sparkline data={sparkline} />
+        <Sparkline data={sparkline} className="hidden sm:block" />
       </div>
-      <div className="mt-4">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <div className="mt-1 flex items-end gap-2">
-          <span className="text-3xl font-bold tracking-tight">{value}</span>
+      <div className="mt-2 md:mt-4">
+        <p className="text-xs text-muted-foreground truncate md:text-sm">{label}</p>
+        <div className="mt-0.5 flex items-end gap-1.5 md:mt-1 md:gap-2">
+          <span className="text-2xl font-bold tracking-tight md:text-3xl">{value}</span>
           <span
             className={cn(
               'mb-1 flex items-center gap-0.5 text-xs font-medium',

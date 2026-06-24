@@ -63,7 +63,7 @@ export function ProfileOverviewTab({ overview }: { overview: PatientProfileOverv
       <PatientInfoCard overview={overview} />
       <TreatmentJourneyCard steps={treatmentJourney} />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => {
           const Icon = card.icon
           return (
@@ -78,7 +78,7 @@ export function ProfileOverviewTab({ overview }: { overview: PatientProfileOverv
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {card.label}
                   </p>
-                  <p className="mt-1 text-sm font-bold leading-snug">{card.value}</p>
+                  <p className="mt-1 text-sm font-bold leading-snug break-words">{card.value}</p>
                   {'badge' in card && card.badge}
                   {'sub' in card && card.sub && (
                     <p className="mt-0.5 text-xs text-muted-foreground">{card.sub}</p>

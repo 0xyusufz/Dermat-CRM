@@ -41,7 +41,7 @@ export function ProfileConditionsTab({
           Patient → Conditions → Medicines. Follow-ups are managed separately at patient level.
         </p>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col lg:gap-0 lg:space-y-3">
         {conditions.map((condition) => (
           <ConditionCard
             key={condition.id}

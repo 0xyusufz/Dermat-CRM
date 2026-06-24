@@ -94,10 +94,10 @@ export function DashboardPage() {
                 >
                   <Link
                     to={action.path}
-                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 card-shadow transition-all hover:shadow-lg"
+                    className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 card-shadow transition-all hover:shadow-lg md:gap-4 md:p-5"
                   >
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${action.gradient} text-white shadow-sm`}
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${action.gradient} text-white shadow-sm md:h-12 md:w-12`}
                     >
                       <Icon className="h-5 w-5" />
                     </div>
@@ -133,10 +133,10 @@ export function DashboardPage() {
                 </div>
 
                 <Card className="h-fit">
-                  <CardHeader>
-                    <CardTitle>Activity Feed</CardTitle>
+                  <CardHeader className="p-4 pb-3 md:p-6 md:pb-4">
+                    <CardTitle className="text-base md:text-lg">Activity Feed</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
                     <ActivityFeed activities={data.activityFeed} />
                   </CardContent>
                 </Card>

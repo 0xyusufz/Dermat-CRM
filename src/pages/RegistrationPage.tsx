@@ -64,7 +64,7 @@ export function RegistrationPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl pb-12 md:pb-0">
       <PageHeader
         title="New Registration"
         description="Register a new patient to the clinic management system."

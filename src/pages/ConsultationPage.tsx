@@ -100,7 +100,7 @@ export function ConsultationPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-6xl pb-12 md:pb-0">
       <PageHeader
         title="Consultation"
         description="Structured dermatology workflow — condition, per-medicine prescriptions, and follow-up."
@@ -158,7 +158,7 @@ export function ConsultationPage() {
                   key={patient.patientId}
                   type="button"
                   onMouseDown={() => selectPatient(patient)}
-                  className="flex w-full cursor-pointer items-center gap-4 border-b border-border/50 px-5 py-3.5 text-left transition-colors last:border-0 hover:bg-muted/60"
+                  className="flex w-full cursor-pointer items-center gap-4 border-b border-border/50 px-5 py-4 sm:py-3.5 text-left transition-colors last:border-0 hover:bg-muted/60"
                 >
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <p className="font-mono text-sm font-semibold text-primary">

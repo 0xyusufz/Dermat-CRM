@@ -47,7 +47,7 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border glass px-4 sm:gap-4 sm:px-6">
-        <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={onMenuClick}>
+        <Button variant="ghost" size="icon" className="lg:hidden shrink-0 min-h-[44px] min-w-[44px]" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
 
@@ -74,7 +74,7 @@ export function TopNavbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-muted/60 transition-colors cursor-pointer">
+              <button className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-muted/60 transition-colors cursor-pointer min-h-[44px] min-w-[44px]">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>AM</AvatarFallback>
                 </Avatar>

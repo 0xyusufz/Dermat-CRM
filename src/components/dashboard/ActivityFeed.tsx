@@ -77,39 +77,39 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="relative flex gap-4 pb-6"
+            className="relative flex gap-3 pb-4 md:gap-4 md:pb-6"
           >
             {!isLast && (
-              <div className="absolute left-[19px] top-10 h-[calc(100%-16px)] w-px bg-border" />
+              <div className="absolute left-[15px] top-8 h-[calc(100%-8px)] w-px bg-border md:left-[19px] md:top-10 md:h-[calc(100%-16px)]" />
             )}
             <div
               className={cn(
-                'relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl md:h-10 md:w-10',
                 config.color
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </div>
-            <div className="min-w-0 flex-1 pt-1">
+            <div className="min-w-0 flex-1 pt-0.5 md:pt-1">
               <div className="flex items-start justify-between gap-2">
                 {activity.patientCode ? (
                   <button
                     type="button"
-                    className="text-left text-sm font-medium hover:underline focus:outline-none"
+                    className="text-left text-sm font-medium hover:underline focus:outline-none line-clamp-2 break-words"
                     onClick={() => navigate(`/patients/${activity.patientCode}`)}
                   >
                     {activity.title}
                   </button>
                 ) : (
-                  <p className="text-sm font-medium">{activity.title}</p>
+                  <p className="text-sm font-medium line-clamp-2 break-words">{activity.title}</p>
                 )}
-                <span className="shrink-0 text-xs text-muted-foreground">
+                <span className="shrink-0 text-[10px] text-muted-foreground md:text-xs">
                   {formatRelativeTime(activity.createdAt)}
                 </span>
               </div>
-              <p className="mt-0.5 text-sm text-muted-foreground">{activity.description}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2 break-words md:text-sm">{activity.description}</p>
               {activity.patientCode && (
-                <p className="mt-0.5 text-xs text-muted-foreground/70">{activity.patientCode}</p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground/70 md:text-xs">{activity.patientCode}</p>
               )}
             </div>
           </motion.div>

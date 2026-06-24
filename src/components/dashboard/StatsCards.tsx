@@ -76,7 +76,7 @@ export function StatsCards({ cards }: StatsCardsProps) {
   ]
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 mb-8">
+    <div className="grid gap-3 grid-cols-2 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-6 mb-8">
       {kpis.map((kpi, i) => (
         <KpiCard key={kpi.label} {...kpi} delay={i * 0.05} />
       ))}

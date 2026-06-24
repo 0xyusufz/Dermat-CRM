@@ -54,7 +54,7 @@ export function PatientHeaderCard({ overview, onFollowUpAction }: PatientHeaderC
       <div className="h-20 bg-gradient-to-r from-primary/20 via-accent/10 to-primary/5" />
       <CardContent className="relative px-6 pb-6">
         <div className="-mt-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex min-w-0 items-end gap-4">
+          <div className="flex min-w-0 flex-col items-start sm:flex-row sm:items-end gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-4 border-background bg-gradient-to-br from-primary to-accent text-xl font-bold text-white shadow-lg">
               {initials}
             </div>

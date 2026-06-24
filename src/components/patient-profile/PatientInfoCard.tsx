@@ -18,13 +18,13 @@ export function PatientInfoCard({ overview }: PatientInfoCardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight">{formatDisplayName(patient.name)}</h2>
-            <p className="font-mono text-sm text-primary">{patient.id}</p>
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold tracking-tight break-words">{formatDisplayName(patient.name)}</h2>
+            <p className="font-mono text-sm text-primary break-all">{patient.id}</p>
           </div>
           <ProfileStatusBadge category="patient" status={patient.status} />
         </div>
-        <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               WhatsApp Number
