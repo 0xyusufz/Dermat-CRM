@@ -41,6 +41,63 @@ export function AllPatientsPage({ filterActive = false }: AllPatientsPageProps) 
     })
   }, [location.pathname, location.search])
 
+  // Global Keyboard Workflow
+  useEffect(() => {
+    if (window.innerWidth < 768) return
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const hasOpenModals = document.querySelector('[role="dialog"], [role="menu"]') !== null
+      const activeElement = document.activeElement as HTMLElement | null
+      const isInputFocused = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.tagName === 'SELECT' ||
+        activeElement.isContentEditable ||
+        activeElement.getAttribute('role') === 'combobox'
+      )
+
+      // Feature 3, 4, 5 — Universal Escape
+      if (e.key === 'Escape') {
+        if (activeElement && activeElement !== document.body) {
+          activeElement.blur()
+          // Do not e.preventDefault() here so Radix UI still catches it to close dropdowns
+        }
+        return
+      }
+
+      // Feature 1 — CMD+K / CTRL+K
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        if (hasOpenModals) return
+        e.preventDefault()
+        const globalSearch = document.getElementById('global-patient-search-input') as HTMLInputElement | null
+        if (globalSearch) {
+          globalSearch.focus()
+          setTimeout(() => globalSearch.select(), 0)
+        }
+        return
+      }
+
+      // Feature 2 & 6 — Auto-Type into Page Search
+      if (!isInputFocused && !hasOpenModals) {
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && /[a-zA-Z0-9]/.test(e.key)) {
+          e.preventDefault()
+          const pageSearch = document.getElementById('patients-search-input') as HTMLInputElement | null
+          if (pageSearch) {
+            pageSearch.focus()
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(pageSearch, pageSearch.value + e.key)
+              pageSearch.dispatchEvent(new Event('input', { bubbles: true }))
+            }
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [])
+
   const handleSetFilters = (newFilters: PatientFiltersState) => {
     // Only update local state. Do not push to URL to prevent reset loop
     // and keep KPI routing distinct from manual filtering.
