@@ -308,19 +308,19 @@ export function FollowUpsPage({ filter }: FollowUpsPageProps) {
                         <div className="flex gap-3 mt-1">
                           <button
                             type="button"
-                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-4 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 text-xs rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm"
                             onClick={() => setRescheduleTarget(row)}
                             disabled={row.status === 'Completed'}
                           >
-                            Reschedule
+                            ↻ Reschedule
                           </button>
                           <button
                             type="button"
-                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-4 rounded-xl border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+                            className="flex-1 inline-flex items-center justify-center whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 text-xs rounded-lg border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm"
                             onClick={() => setCompleteTarget(row)}
                             disabled={row.status === 'Completed'}
                           >
-                            Mark Completed
+                            ✓ Complete
                           </button>
                         </div>
                       )}
