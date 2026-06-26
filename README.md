@@ -24,15 +24,12 @@ Built with ❤️ using **React, TypeScript, Airtable, Cloudflare Workers, n8n, 
 * Technology Stack
 * System Architecture
 * Project Structure
-* Installation Guide
-* Configuration
 * Automation Workflows
 * Security
 * Scalability
 * Future Roadmap
-* Screenshots
 * Contributing
-* License
+
 
 ---
 
