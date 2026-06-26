@@ -1526,16 +1526,6 @@ This project represents the first step toward that vision.
 
 ---
 
-# 📄 License
-
-This project is licensed under the **MIT License**.
-
-You are free to use, modify, and distribute this project in accordance with the terms of the license.
-
-See the `LICENSE` file for additional details.
-
----
-
 # 📬 Contact
 
 If you'd like to discuss the project, share feedback, collaborate, or explore opportunities related to healthcare technology and workflow automation, feel free to connect.
