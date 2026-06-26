@@ -21,7 +21,6 @@ Built with ❤️ using **React, TypeScript, Airtable, Cloudflare Workers, n8n, 
 * Objectives
 * Business Impact
 * Key Features
-* Technology Stack
 * System Architecture
 * Project Structure
 * Automation Workflows
